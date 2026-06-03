@@ -212,13 +212,46 @@
         <div class="stat-card naranja"><div class="stat-n" id="dash-ioma">0</div><div class="stat-l">Con IOMA</div></div>
         <div class="stat-card rojo"><div class="stat-n" id="dash-alerg">0</div><div class="stat-l">Con alergias registradas</div></div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Distribución por obra social</div></div>
-        <div id="dash-os-bars"></div>
+        <!-- ALERTAS RÁPIDAS -->
+      <div id="dash-alertas" style="margin-bottom:1rem"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <!-- Cumpleaños del mes -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎂 Cumpleaños del mes</div></div>
+          <div id="dash-cumples"></div>
+        </div>
+        <!-- Sin controles recientes -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚠️ Sin controles recientes</div></div>
+          <div id="dash-sin-controles"></div>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Ingresos recientes</div></div>
-        <div id="dash-recientes"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <!-- Pañales bajos -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🧷 Stock bajo de pañales</div></div>
+          <div id="dash-paniales-bajos"></div>
+        </div>
+        <!-- Distribución por piso -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏢 Distribución por piso</div></div>
+          <div id="dash-pisos"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <!-- Obra social -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏥 Distribución por obra social</div></div>
+          <div id="dash-os-bars"></div>
+        </div>
+        <!-- Ingresos recientes -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">📅 Ingresos recientes</div></div>
+          <div id="dash-recientes"></div>
+        </div>
       </div>
     </div>
 
@@ -366,13 +399,30 @@
             <div class="fi"><label>Médico de cabecera</label><input id="fMedico"></div>
             <div class="fi"><label>Teléfono médico</label><input id="fMedTel"></div>
           </div>
-          <div class="section-label">Responsable / Familiar</div>
-          <div class="form-grid">
-            <div class="fi"><label>Nombre</label><input id="fRespNombre"></div>
-            <div class="fi"><label>Vínculo</label><input id="fRespVinculo" placeholder="Hijo/a, Cónyuge..."></div>
-            <div class="fi"><label>DNI</label><input id="fRespDni"></div>
-            <div class="fi"><label>Teléfono</label><input id="fRespTel"></div>
-            <div class="fi full"><label>Correo electrónico</label><input id="fRespEmail"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <div class="section-label" style="margin:0;border:none">Responsable / Familiares</div>
+            <button class="btn btn-primary btn-sm" onclick="agregarFamiliar()">+ Agregar familiar</button>
+          </div>
+          <div id="listaFamiliares"></div>
+          <div class="form-card" id="formFamiliar" style="display:none;margin-bottom:1rem">
+            <div style="font-size:13px;font-weight:600;margin-bottom:.75rem" id="tituloFormFamiliar">Nuevo familiar</div>
+            <div class="form-grid">
+              <div class="fi"><label>Nombre completo</label><input id="fRespNombre"></div>
+              <div class="fi"><label>Vínculo</label><input id="fRespVinculo" placeholder="Hijo/a, Cónyuge, Hermano/a..."></div>
+              <div class="fi"><label>DNI</label><input id="fRespDni"></div>
+              <div class="fi"><label>Teléfono</label><input id="fRespTel"></div>
+              <div class="fi"><label>Correo electrónico</label><input id="fRespEmail"></div>
+              <div class="fi"><label>¿Es el responsable principal?</label>
+                <select id="fRespPrincipal">
+                  <option value="no">No</option>
+                  <option value="si">Sí — responsable principal</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="cancelarFamiliar()">Cancelar</button>
+              <button class="btn btn-primary" id="btnGuardarFamiliar" onclick="guardarFamiliar()">Guardar</button>
+            </div>
           </div>
           <div class="section-label">Datos médicos básicos</div>
           <div class="form-grid">
@@ -3407,34 +3457,134 @@ function actualizarBadgeEstado(estado) {
 
 // ── DASHBOARD ─────────────────────────────────────────────────────
 function renderDashboard() {
-  const pami  = residentes.filter(r => r.obraSocial.toUpperCase().includes('PAMI')).length;
-  const ioma  = residentes.filter(r => r.obraSocial.toUpperCase().includes('IOMA')).length;
-  const alerg = residentes.filter(r => r.alergias).length;
-  document.getElementById('dash-total').textContent = residentes.length;
+  const activos = residentes.filter(r => (r.estado||'activo') === 'activo');
+  const pami  = activos.filter(r => r.obraSocial.toUpperCase().includes('PAMI')).length;
+  const ioma  = activos.filter(r => r.obraSocial.toUpperCase().includes('IOMA')).length;
+  const alerg = activos.filter(r => r.alergias).length;
+  document.getElementById('dash-total').textContent = activos.length;
   document.getElementById('dash-pami').textContent  = pami;
   document.getElementById('dash-ioma').textContent  = ioma;
   document.getElementById('dash-alerg').textContent = alerg;
-  // Barras OS
-  const osCounts = {};
-  residentes.forEach(r => { const k=r.obraSocial||'Sin datos'; osCounts[k]=(osCounts[k]||0)+1; });
-  const max = Math.max(...Object.values(osCounts));
-  document.getElementById('dash-os-bars').innerHTML = Object.entries(osCounts)
-    .sort((a,b)=>b[1]-a[1]).map(([os,n])=>`
-    <div style="display:flex;align-items:center;gap.75rem;margin-bottom:.5rem">
-      <div style="width:140px;font-size:13px;color:var(--txt-s);text-align:right;padding-right:.75rem">${os}</div>
-      <div style="flex:1;background:var(--gris);border-radius:99px;height:20px;overflow:hidden">
-        <div style="width:${Math.round(n/max*100)}%;background:var(--azul);height:100%;border-radius:99px;display:flex;align-items:center;padding-left:8px">
+
+  const hoy = new Date();
+  const mesActual = hoy.getMonth() + 1;
+
+  // ── CUMPLEAÑOS DEL MES ─────────────────────────────────────────
+  const cumples = activos.filter(r => {
+    if (!r.fnac) return false;
+    const mes = parseInt(r.fnac.split('-')[1]);
+    return mes === mesActual;
+  }).sort((a,b) => {
+    const da = parseInt(a.fnac.split('-')[2]);
+    const db = parseInt(b.fnac.split('-')[2]);
+    return da - db;
+  });
+  document.getElementById('dash-cumples').innerHTML = cumples.length
+    ? cumples.map(r => {
+        const partes = r.fnac.split('-');
+        const dia = partes[2];
+        const anio = parseInt(partes[0]);
+        const edad = hoy.getFullYear() - anio;
+        const esHoy = parseInt(dia) === hoy.getDate();
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--gris-b)">
+          <div style="font-size:13px;font-weight:${esHoy?'700':'500'};color:${esHoy?'var(--azul)':'var(--txt)'}">
+            ${esHoy?'🎂 ':''} ${r.nombre.split(',')[0]}
+          </div>
+          <div style="font-size:12px;color:var(--gris-t)">${dia}/${String(mesActual).padStart(2,'0')} · ${edad} años</div>
+        </div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--gris-t);padding:.5rem 0">Sin cumpleaños este mes</div>';
+
+  // ── SIN CONTROLES RECIENTES (más de 3 días) ────────────────────
+  const hace3dias = new Date(hoy); hace3dias.setDate(hace3dias.getDate() - 3);
+  const sinControles = activos.filter(r => {
+    const ex = extra[r.id] || {};
+    if (!ex.controles || !ex.controles.length) return true;
+    const ultimo = ex.controles[0].fecha;
+    if (!ultimo) return true;
+    const partes = ultimo.includes('/') ? ultimo.split('/').reverse().join('-') : ultimo;
+    return new Date(partes) < hace3dias;
+  });
+  document.getElementById('dash-sin-controles').innerHTML = sinControles.length
+    ? sinControles.slice(0,6).map(r => {
+        const ex = extra[r.id] || {};
+        const ultimo = ex.controles?.[0]?.fecha || 'Sin registro';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--gris-b);cursor:pointer" onclick="abrirExp(${residentes.indexOf(r)})">
+          <div style="font-size:13px;font-weight:500">${r.nombre.split(',')[0]}</div>
+          <div style="font-size:12px;color:var(--naranja)">${ultimo}</div>
+        </div>`;
+      }).join('') + (sinControles.length > 6 ? `<div style="font-size:12px;color:var(--gris-t);padding:.5rem 0">...y ${sinControles.length-6} más</div>` : '')
+    : '<div style="font-size:13px;color:var(--verde);padding:.5rem 0">✅ Todos con controles al día</div>';
+
+  // ── PAÑALES BAJOS ──────────────────────────────────────────────
+  const panBajos = activos.filter(r => {
+    const pan = getPaniales(r.id);
+    if (pan.usaPaniales !== 'si') return false;
+    const stock = calcularStock(pan);
+    return stock <= (pan.alerta || 10);
+  });
+  document.getElementById('dash-paniales-bajos').innerHTML = panBajos.length
+    ? panBajos.map(r => {
+        const pan = getPaniales(r.id);
+        const stock = calcularStock(pan);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--gris-b);cursor:pointer" onclick="abrirExpYTab('${r.id}','paniales')">
+          <div style="font-size:13px;font-weight:500">${r.nombre.split(',')[0]}</div>
+          <span style="background:${stock===0?'var(--rojo-l)':'var(--naranja-l)'};color:${stock===0?'var(--rojo)':'var(--naranja)'};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">${stock===0?'Sin stock':stock+' unid.'}</span>
+        </div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--verde);padding:.5rem 0">✅ Stock OK en todos</div>';
+
+  // ── DISTRIBUCIÓN POR PISO ──────────────────────────────────────
+  const pisoCounts = {};
+  activos.forEach(r => {
+    const p = r.piso || 'Sin piso asignado';
+    pisoCounts[p] = (pisoCounts[p]||0) + 1;
+  });
+  const maxPiso = Math.max(...Object.values(pisoCounts));
+  document.getElementById('dash-pisos').innerHTML = Object.entries(pisoCounts)
+    .sort((a,b) => b[1]-a[1]).map(([piso,n]) => `
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+      <div style="width:120px;font-size:12px;color:var(--txt-s);text-align:right">${piso}</div>
+      <div style="flex:1;background:var(--gris);border-radius:99px;height:18px;overflow:hidden">
+        <div style="width:${Math.round(n/maxPiso*100)}%;background:var(--azul);height:100%;border-radius:99px;display:flex;align-items:center;padding-left:6px">
           <span style="font-size:11px;color:#fff;font-weight:700">${n}</span>
         </div>
       </div>
     </div>`).join('');
-  // Recientes (últimos 5 ingresos)
-  const recientes = [...residentes].filter(r=>r.ingreso).sort((a,b)=>b.ingreso.localeCompare(a.ingreso)).slice(0,5);
-  document.getElementById('dash-recientes').innerHTML = recientes.map(r=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--gris-b)">
-      <div><div style="font-size:14px;font-weight:600">${r.nombre}</div><div style="font-size:12px;color:var(--gris-t)">${r.piso||'Sin piso'}</div></div>
-      <div style="font-size:13px;color:var(--gris-t)">${r.ingreso.split('-').reverse().join('/')}</div>
+
+  // ── OBRA SOCIAL ────────────────────────────────────────────────
+  const osCounts = {};
+  activos.forEach(r => { const k=r.obraSocial||'Sin datos'; osCounts[k]=(osCounts[k]||0)+1; });
+  const maxOS = Math.max(...Object.values(osCounts));
+  document.getElementById('dash-os-bars').innerHTML = Object.entries(osCounts)
+    .sort((a,b)=>b[1]-a[1]).map(([os,n])=>`
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+      <div style="width:100px;font-size:12px;color:var(--txt-s);text-align:right">${os}</div>
+      <div style="flex:1;background:var(--gris);border-radius:99px;height:18px;overflow:hidden">
+        <div style="width:${Math.round(n/maxOS*100)}%;background:var(--azul);height:100%;border-radius:99px;display:flex;align-items:center;padding-left:6px">
+          <span style="font-size:11px;color:#fff;font-weight:700">${n}</span>
+        </div>
+      </div>
     </div>`).join('');
+
+  // ── INGRESOS RECIENTES ─────────────────────────────────────────
+  const recientes = [...activos].filter(r=>r.ingreso).sort((a,b)=>b.ingreso.localeCompare(a.ingreso)).slice(0,5);
+  document.getElementById('dash-recientes').innerHTML = recientes.map(r=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--gris-b);cursor:pointer" onclick="abrirExp(${residentes.indexOf(r)})">
+      <div><div style="font-size:13px;font-weight:600">${r.nombre.split(',')[0]}</div><div style="font-size:12px;color:var(--gris-t)">${r.piso||'Sin piso'}</div></div>
+      <div style="font-size:12px;color:var(--gris-t)">${r.ingreso.split('-').reverse().join('/')}</div>
+    </div>`).join('');
+
+  // ── ALERTAS GENERALES ──────────────────────────────────────────
+  const alertas = [];
+  if (panBajos.length) alertas.push(`🧷 <strong>${panBajos.length}</strong> residente${panBajos.length>1?'s':''} con stock bajo de pañales`);
+  if (sinControles.length) alertas.push(`📊 <strong>${sinControles.length}</strong> residente${sinControles.length>1?'s':''} sin controles en los últimos 3 días`);
+  const cumpleHoy = cumples.filter(r => parseInt(r.fnac.split('-')[2]) === hoy.getDate());
+  if (cumpleHoy.length) alertas.push(`🎂 Hoy cumple años: <strong>${cumpleHoy.map(r=>r.nombre.split(',')[0]).join(', ')}</strong>`);
+
+  document.getElementById('dash-alertas').innerHTML = alertas.length
+    ? alertas.map(a => `<div style="background:var(--naranja-l);border-left:4px solid var(--naranja);border-radius:var(--radio);padding:.75rem 1rem;font-size:13px;margin-bottom:.5rem">${a}</div>`).join('')
+    : '';
 }
 
 // ── EXPEDIENTE ────────────────────────────────────────────────────
@@ -3487,6 +3637,20 @@ function abrirExp(i) {
   renderEvol(exFinal.evoluciones||[]);
   renderMeds(exFinal.meds||[]);
   renderPaniales(r.id);
+  // Cargar familiares
+  const exFam = extra[r.id] || {};
+  if (!exFam.familiares && (r.contacto || r.tel)) {
+    // Migrar datos legacy al nuevo formato
+    exFam.familiares = [{
+      nombre: r.contacto || '',
+      vinculo: r.respVinculo || '',
+      dni: r.respDni || '',
+      tel: r.tel || '',
+      email: r.respEmail || '',
+      principal: true
+    }].filter(f => f.nombre);
+  }
+  renderFamiliares(exFam.familiares || []);
   renderEstudios((extra[r.id]||{}).estudios||[]);
   renderCtrl(ex.controles||[]);
   showETab('datos', document.querySelector('.etab'));
@@ -3563,6 +3727,121 @@ function showETab(id, el) {
   document.querySelectorAll('.etab').forEach(t=>t.classList.remove('active'));
   document.getElementById('ep-'+id).classList.add('active');
   el.classList.add('active');
+}
+
+// ── FAMILIARES ────────────────────────────────────────────────────
+let familiarEditIdx = -1;
+
+function agregarFamiliar() {
+  familiarEditIdx = -1;
+  document.getElementById('tituloFormFamiliar').textContent = 'Nuevo familiar';
+  document.getElementById('fRespNombre').value = '';
+  document.getElementById('fRespVinculo').value = '';
+  document.getElementById('fRespDni').value = '';
+  document.getElementById('fRespTel').value = '';
+  document.getElementById('fRespEmail').value = '';
+  document.getElementById('fRespPrincipal').value = 'no';
+  document.getElementById('btnGuardarFamiliar').textContent = 'Guardar';
+  document.getElementById('formFamiliar').style.display = 'block';
+}
+
+function cancelarFamiliar() {
+  document.getElementById('formFamiliar').style.display = 'none';
+  familiarEditIdx = -1;
+}
+
+function editarFamiliar(i) {
+  const r = residentes[expIdx];
+  const ex = extra[r.id] || {};
+  const fams = ex.familiares || [];
+  const f = fams[i];
+  familiarEditIdx = i;
+  document.getElementById('tituloFormFamiliar').textContent = 'Editar familiar';
+  document.getElementById('fRespNombre').value  = f.nombre || '';
+  document.getElementById('fRespVinculo').value = f.vinculo || '';
+  document.getElementById('fRespDni').value     = f.dni || '';
+  document.getElementById('fRespTel').value     = f.tel || '';
+  document.getElementById('fRespEmail').value   = f.email || '';
+  document.getElementById('fRespPrincipal').value = f.principal ? 'si' : 'no';
+  document.getElementById('btnGuardarFamiliar').textContent = 'Actualizar';
+  document.getElementById('formFamiliar').style.display = 'block';
+}
+
+function guardarFamiliar() {
+  const nombre = document.getElementById('fRespNombre').value.trim();
+  if (!nombre) return;
+  const r = residentes[expIdx];
+  const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}, familiares:[]};
+  if (!ex.familiares) ex.familiares = [];
+
+  const familiar = {
+    nombre,
+    vinculo:   document.getElementById('fRespVinculo').value,
+    dni:       document.getElementById('fRespDni').value,
+    tel:       document.getElementById('fRespTel').value,
+    email:     document.getElementById('fRespEmail').value,
+    principal: document.getElementById('fRespPrincipal').value === 'si'
+  };
+
+  // Si es principal, desmarcar los demás
+  if (familiar.principal) ex.familiares.forEach(f => f.principal = false);
+
+  if (familiarEditIdx >= 0) {
+    ex.familiares[familiarEditIdx] = familiar;
+  } else {
+    ex.familiares.push(familiar);
+  }
+
+  // Actualizar también los campos legacy del residente para compatibilidad
+  if (familiar.principal || ex.familiares.length === 1) {
+    r.contacto = familiar.nombre;
+    r.tel = familiar.tel;
+    r.respVinculo = familiar.vinculo;
+    r.respDni = familiar.dni;
+    r.respEmail = familiar.email;
+  }
+
+  extra[r.id] = ex;
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  sbUpsert('residentes', r.id, r).catch(()=>{});
+  renderFamiliares(ex.familiares);
+  cancelarFamiliar();
+}
+
+function borrarFamiliar(i) {
+  if (!confirm('¿Eliminar este familiar?')) return;
+  const r = residentes[expIdx];
+  const ex = extra[r.id];
+  ex.familiares.splice(i, 1);
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  renderFamiliares(ex.familiares);
+}
+
+function renderFamiliares(arr) {
+  const c = document.getElementById('listaFamiliares');
+  if (!arr || !arr.length) {
+    c.innerHTML = '<div style="font-size:13px;color:var(--gris-t);padding:.5rem 0;margin-bottom:.75rem">Sin familiares registrados — agregá el primero con el botón de arriba.</div>';
+    return;
+  }
+  c.innerHTML = arr.map((f, i) => `
+    <div style="border:1.5px solid ${f.principal?'var(--azul)':'var(--gris-b)'};border-radius:var(--radio-lg);padding:.75rem 1rem;margin-bottom:.75rem;background:${f.principal?'var(--azul-l)':'var(--blanco)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span style="font-weight:600;font-size:14px">${f.nombre}</span>
+          ${f.vinculo ? `<span style="background:var(--gris);color:var(--gris-t);padding:1px 7px;border-radius:99px;font-size:11px">${f.vinculo}</span>` : ''}
+          ${f.principal ? `<span style="background:var(--azul);color:#fff;padding:1px 7px;border-radius:99px;font-size:11px">⭐ Principal</span>` : ''}
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-sm" onclick="editarFamiliar(${i})" style="padding:3px 8px">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="borrarFamiliar(${i})" style="padding:3px 8px">🗑</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:13px;color:var(--txt-s)">
+        ${f.tel ? `<span>📞 ${f.tel}</span>` : ''}
+        ${f.email ? `<span>✉️ ${f.email}</span>` : ''}
+        ${f.dni ? `<span>🪪 DNI: ${f.dni}</span>` : ''}
+      </div>
+    </div>`).join('');
 }
 
 // ── ESTUDIOS Y LABORATORIOS ───────────────────────────────────────
@@ -3679,8 +3958,12 @@ Si es una imagen radiológica o ECG, en "valores" poné los hallazgos descriptiv
 Devolvé SOLO el JSON sin backticks.`;
 
   try {
+    // Timeout de 30 segundos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': ANTHROPIC_KEY,
@@ -3745,7 +4028,10 @@ Devolvé SOLO el JSON sin backticks.`;
 
   } catch(e) {
     div.style.display = 'block';
-    div.innerHTML = `<div style="background:var(--rojo-l);color:var(--rojo);border-radius:var(--radio);padding:.75rem;font-size:13px">❌ ${e.message}</div>`;
+    const msg = e.name === 'AbortError'
+      ? '⏱ La IA tardó demasiado. Intentá de nuevo o usá una imagen más pequeña.'
+      : '❌ ' + e.message;
+    div.innerHTML = `<div style="background:var(--rojo-l);color:var(--rojo);border-radius:var(--radio);padding:.75rem;font-size:13px">${msg}</div>`;
   }
   btn.textContent = '🔍 Extraer valores con IA';
   btn.disabled = false;
@@ -3785,7 +4071,7 @@ function renderEstudios(arr) {
     const vals = e.valores;
     const alertas = vals?.alertas?.length ? `<span style="background:var(--rojo-l);color:var(--rojo);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">🚨 ${vals.alertas[0]}</span>` : '';
     const concl = vals?.conclusion ? `<div style="font-size:12px;color:var(--txt-s);margin-top:4px;font-style:italic">${vals.conclusion}</div>` : '';
-    const img = e.imagen ? `<img src="${e.imagen}" style="width:100%;max-height:200px;object-fit:contain;border-radius:var(--radio);border:1px solid var(--gris-b);margin-top:.75rem" alt="Estudio">` : '';
+    const img = e.imagen ? `<img src="${e.imagen}" onclick="ampliarImagen(this.src)" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--radio);border:1px solid var(--gris-b);margin-top:.75rem;cursor:zoom-in" title="Clic para ampliar" alt="Estudio">` : '';
     return `<div style="border:1.5px solid var(--gris-b);border-radius:var(--radio-lg);padding:1rem;margin-bottom:.75rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
         <div>
@@ -3803,6 +4089,21 @@ function renderEstudios(arr) {
       ${img}
     </div>`;
   }).join('');
+}
+
+function ampliarImagen(src) {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:1rem';
+  modal.onclick = () => document.body.removeChild(modal);
+  const img = document.createElement('img');
+  img.src = src;
+  img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+  const cerrar = document.createElement('div');
+  cerrar.textContent = '✕ Cerrar';
+  cerrar.style.cssText = 'position:absolute;top:1rem;right:1.5rem;color:#fff;font-size:16px;font-weight:600;cursor:pointer;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:99px';
+  modal.appendChild(img);
+  modal.appendChild(cerrar);
+  document.body.appendChild(modal);
 }
 
 function borrarEstudio(i) {
@@ -3845,6 +4146,20 @@ function guardarConfigPaniales() {
   extra[r.id] = ex;
   sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
   renderPaniales(r.id);
+  // Cargar familiares
+  const exFam = extra[r.id] || {};
+  if (!exFam.familiares && (r.contacto || r.tel)) {
+    // Migrar datos legacy al nuevo formato
+    exFam.familiares = [{
+      nombre: r.contacto || '',
+      vinculo: r.respVinculo || '',
+      dni: r.respDni || '',
+      tel: r.tel || '',
+      email: r.respEmail || '',
+      principal: true
+    }].filter(f => f.nombre);
+  }
+  renderFamiliares(exFam.familiares || []);
   renderEstudios((extra[r.id]||{}).estudios||[]);
 }
 
@@ -3913,6 +4228,20 @@ function guardarEntregaPanial() {
   extra[r.id] = ex;
   sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
   renderPaniales(r.id);
+  // Cargar familiares
+  const exFam = extra[r.id] || {};
+  if (!exFam.familiares && (r.contacto || r.tel)) {
+    // Migrar datos legacy al nuevo formato
+    exFam.familiares = [{
+      nombre: r.contacto || '',
+      vinculo: r.respVinculo || '',
+      dni: r.respDni || '',
+      tel: r.tel || '',
+      email: r.respEmail || '',
+      principal: true
+    }].filter(f => f.nombre);
+  }
+  renderFamiliares(exFam.familiares || []);
   renderEstudios((extra[r.id]||{}).estudios||[]);
   showFPanial(false);
   renderVistaPaniales();
