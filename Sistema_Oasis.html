@@ -3628,17 +3628,26 @@ function previsualizarEstudio(input) {
     };
     reader.readAsDataURL(file);
   } else {
-    // PDF u otro — leer tal cual
+    // PDF — avisar que hay que convertir a imagen
+    document.getElementById('dropEstudio').style.borderColor = 'var(--naranja)';
+    document.getElementById('dropEstudio').querySelector('div:first-child').textContent = '⚠️';
+    document.getElementById('dropEstudio').querySelectorAll('div')[1].textContent = 'PDF detectado';
+    document.getElementById('dropEstudio').querySelectorAll('div')[2].textContent = 'Para analizar con IA, convertí el PDF a imagen primero (captura de pantalla)';
+    document.getElementById('valoresExtraidos').style.display = 'block';
+    document.getElementById('valoresExtraidos').innerHTML = `<div style="background:var(--naranja-l);color:var(--naranja);border:1px solid var(--naranja);border-radius:var(--radio);padding:.75rem;font-size:13px">
+      ⚠ Los PDFs no se pueden analizar directamente con IA.<br><br>
+      <strong>Para analizar el laboratorio:</strong><br>
+      1. Abrí el PDF<br>
+      2. Sacá una captura de pantalla (Windows + Shift + S en PC, o desde el teléfono)<br>
+      3. Subí esa imagen en lugar del PDF<br><br>
+      El PDF igual se puede guardar en el expediente sin análisis de IA.
+    </div>`;
+    // Igual permitir guardar el PDF sin análisis
     const reader = new FileReader();
     reader.onload = e => {
       estudioBase64 = e.target.result;
       estudioMediaType = file.type;
-      document.getElementById('previewEstudio').style.display = 'none';
-      document.getElementById('btnExtraerValores').style.display = 'inline-flex';
       document.getElementById('btnLimpiarImg').style.display = 'block';
-      document.getElementById('dropEstudio').style.borderColor = 'var(--verde)';
-      document.getElementById('dropEstudio').querySelector('div:first-child').textContent = '✅';
-      document.getElementById('dropEstudio').querySelectorAll('div')[1].textContent = file.name;
     };
     reader.readAsDataURL(file);
   }
