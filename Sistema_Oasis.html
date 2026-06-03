@@ -1,0 +1,4437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Residencia Geriátrica Oasis</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --azul:#1B6CA8;--azul-l:#D6E8F5;--azul-d:#0D4A7A;
+    --verde:#1B7A4A;--verde-l:#E8F5EE;
+    --gris:#F4F6F8;--gris-b:#E8ECF0;--gris-t:#6B7280;
+    --txt:#1A2332;--txt-s:#4B5563;--blanco:#FFFFFF;
+    --rojo:#DC2626;--rojo-l:#FEF2F2;
+    --naranja:#D97706;--naranja-l:#FFFBEB;
+    --radio:10px;--radio-lg:14px;
+    --sombra:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+    --sombra-lg:0 4px 12px rgba(0,0,0,.1);
+  }
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#EEF2F7;color:var(--txt);min-height:100vh}
+
+  /* TOPBAR */
+  .topbar{background:var(--azul);color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .topbar-brand{font-size:17px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+  .topbar-brand span{font-weight:300;opacity:.8;font-size:14px}
+  .topbar-right{display:flex;align-items:center;gap:10px}
+  .chip{background:rgba(255,255,255,.15);border-radius:99px;padding:4px 12px;font-size:12px}
+
+  /* LAYOUT */
+  .layout{display:flex;min-height:calc(100vh - 56px)}
+  .sidebar{width:220px;background:var(--blanco);border-right:1px solid var(--gris-b);padding:1rem 0;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+  .main{flex:1;padding:1.5rem;overflow-y:auto}
+
+  /* SIDEBAR NAV */
+  .nav-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gris-t);padding:.5rem 1.25rem .25rem;margin-top:.5rem}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:.55rem 1.25rem;font-size:13.5px;color:var(--txt-s);cursor:pointer;border-radius:0;transition:all .15s;border-left:3px solid transparent}
+  .nav-item:hover{background:var(--gris);color:var(--txt)}
+  .nav-item.active{background:var(--azul-l);color:var(--azul);border-left-color:var(--azul);font-weight:600}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+  .nav-item.active svg{opacity:1}
+
+  /* VISTAS */
+  .vista{display:none}.vista.active{display:block}
+
+  /* CARDS */
+  .card{background:var(--blanco);border-radius:var(--radio-lg);box-shadow:var(--sombra);padding:1.25rem;margin-bottom:1rem}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .card-title{font-size:15px;font-weight:600;color:var(--txt)}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+  .stat-card{background:var(--blanco);border-radius:var(--radio-lg);box-shadow:var(--sombra);padding:1rem 1.25rem;border-left:4px solid var(--azul)}
+  .stat-card.verde{border-left-color:var(--verde)}
+  .stat-card.naranja{border-left-color:var(--naranja)}
+  .stat-card.rojo{border-left-color:var(--rojo)}
+  .stat-n{font-size:28px;font-weight:700;line-height:1;color:var(--txt)}
+  .stat-l{font-size:12px;color:var(--gris-t);margin-top:4px}
+
+  /* SEARCH */
+  .search-row{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+  .search-input{flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--gris-b);border-radius:var(--radio);font-size:14px;color:var(--txt);background:var(--blanco);transition:border .15s}
+  .search-input:focus{outline:none;border-color:var(--azul)}
+  .filter-btn{padding:7px 14px;border-radius:var(--radio);border:1.5px solid var(--gris-b);background:var(--blanco);color:var(--gris-t);font-size:12px;cursor:pointer;font-weight:500;transition:all .15s}
+  .filter-btn:hover{border-color:var(--azul);color:var(--azul)}
+  .filter-btn.on{background:var(--azul);border-color:var(--azul);color:#fff}
+
+  /* TABLA RESIDENTES */
+  .res-table{width:100%;border-collapse:collapse}
+  .res-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gris-t);background:var(--gris);border-bottom:2px solid var(--gris-b)}
+  .res-table td{padding:11px 14px;border-bottom:1px solid var(--gris-b);font-size:13.5px;vertical-align:middle}
+  .res-table tr:hover td{background:#F8FAFC;cursor:pointer}
+  .res-name{font-weight:600;color:var(--txt)}
+  .res-sub{font-size:12px;color:var(--gris-t);margin-top:2px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+  .pill-pami{background:#DBEAFE;color:#1D4ED8}
+  .pill-ioma{background:#D1FAE5;color:#065F46}
+  .pill-iosfa{background:#FEF3C7;color:#92400E}
+  .pill-osde{background:#EDE9FE;color:#5B21B6}
+  .pill-otro{background:var(--gris);color:var(--gris-t)}
+  .pill-alergia{background:var(--rojo-l);color:var(--rojo)}
+
+  /* BTN */
+  .btn{padding:7px 15px;border-radius:var(--radio);border:1.5px solid var(--gris-b);background:var(--blanco);color:var(--txt);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:500;transition:all .15s}
+  .btn:hover{background:var(--gris)}
+  .btn-primary{background:var(--azul);border-color:var(--azul);color:#fff}
+  .btn-primary:hover{background:var(--azul-d)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-danger{background:var(--rojo-l);border-color:var(--rojo);color:var(--rojo)}
+
+  /* EXPEDIENTE */
+  .exp-header{background:linear-gradient(135deg,var(--azul-d),var(--azul));color:#fff;border-radius:var(--radio-lg);padding:1.25rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+  .exp-avatar{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;overflow:hidden;border:2px solid rgba(255,255,255,.3)}
+  .exp-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+  .exp-nombre{font-size:20px;font-weight:700}
+  .exp-meta{font-size:13px;opacity:.8;margin-top:3px}
+  .exp-tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--blanco);border-radius:var(--radio-lg);padding:6px;box-shadow:var(--sombra)}
+  .etab{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--gris-t);font-weight:500;transition:all .15s;border:none;background:transparent;white-space:nowrap}
+  .etab:hover{color:var(--txt);background:var(--gris)}
+  .etab.active{background:var(--azul);color:#fff}
+  .epanel{display:none}.epanel.active{display:block}
+
+  /* FORMULARIO */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem}
+  .form-grid.cols2{grid-template-columns:1fr 1fr}
+  .fi{display:flex;flex-direction:column;gap:5px}
+  .fi label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t)}
+  .fi input,.fi select,.fi textarea{padding:8px 10px;border:1.5px solid var(--gris-b);border-radius:var(--radio);font-size:13.5px;color:var(--txt);background:var(--blanco);transition:border .15s;font-family:inherit}
+  .fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--azul)}
+  .fi textarea{resize:vertical;min-height:72px}
+  .fi.full{grid-column:1/-1}
+  .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--azul);padding-bottom:6px;border-bottom:2px solid var(--azul-l);margin-bottom:.75rem;margin-top:.25rem}
+
+  /* FOTO */
+  .foto-box{width:100px;height:128px;border:2px dashed var(--gris-b);border-radius:var(--radio);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--gris-t);font-size:12px;flex-shrink:0;background:var(--gris);overflow:hidden;transition:border .15s}
+  .foto-box:hover{border-color:var(--azul);color:var(--azul)}
+  .foto-box img{width:100%;height:100%;object-fit:cover}
+  .top-datos{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.25rem}
+
+  /* LISTAS */
+  .evol-item{border:1.5px solid var(--gris-b);border-radius:var(--radio);padding:1rem;margin-bottom:.75rem;transition:border .15s}
+  .evol-item:hover{border-color:var(--azul-l)}
+  .evol-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+  .evol-fecha{font-size:12px;color:var(--gris-t);font-weight:600}
+  .evol-autor{font-size:12px;font-weight:700;color:var(--azul)}
+  .evol-txt{font-size:13.5px;line-height:1.6;color:var(--txt-s)}
+  .med-head,.ctrl-head{display:grid;padding:8px 12px;background:var(--gris);border-radius:var(--radio);margin-bottom:4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t)}
+  .med-head{grid-template-columns:2fr 1fr 1.2fr 1fr auto}
+  .ctrl-head{grid-template-columns:100px 80px 90px 70px 70px 75px 75px 80px 1fr}
+  .med-row,.ctrl-row{display:grid;padding:9px 12px;border-bottom:1px solid var(--gris-b);font-size:13px;align-items:center}
+  .med-row{grid-template-columns:2fr 1fr 1.2fr 1fr auto}
+  .ctrl-row{grid-template-columns:100px 80px 90px 70px 70px 75px 75px 80px 1fr;font-size:12px}
+  .empty-state{text-align:center;padding:2.5rem;color:var(--gris-t);font-size:14px}
+  .empty-icon{font-size:36px;display:block;margin-bottom:.5rem}
+  .form-card{border:1.5px solid var(--azul-l);border-radius:var(--radio-lg);padding:1rem;margin-top:1rem;background:#FAFCFF}
+
+  /* SAVED */
+  .saved-chip{display:none;align-items:center;gap:5px;font-size:12px;color:var(--verde);font-weight:600}
+  .saved-chip.on{display:flex}
+
+  /* BACK */
+  .back-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+
+  /* MODAL ALERT */
+  .alert{padding:.75rem 1rem;border-radius:var(--radio);font-size:13px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  .alert-info{background:var(--azul-l);color:var(--azul-d)}
+
+  .mov-row{display:grid;grid-template-columns:100px 80px 1fr 60px;gap:8px;padding:9px 12px;border-bottom:1px solid var(--gris-b);font-size:13px;align-items:center}
+  .mov-head{display:grid;grid-template-columns:100px 80px 1fr 60px;gap:8px;padding:7px 12px;background:var(--gris);border-radius:var(--radio);margin-bottom:4px;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gris-t)}
+  @media print{
+    .sidebar,.topbar,.btn,.back-row,.search-row,.exp-tabs,.form-card{display:none!important}
+    .main{padding:0}.card{box-shadow:none;border:1px solid #ccc}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    🏥 Residencia Geriátrica Oasis
+    <span>Sistema de Gestión</span>
+  </div>
+  <div class="topbar-right">
+    <div class="chip" id="storageChip">💾 Cargando...</div>
+    <button class="btn btn-sm" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.1)" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="showVista('lista')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+      Residentes
+    </div>
+    <div class="nav-item" onclick="showVista('dashboard')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Resumen
+    </div>
+    <div class="nav-section">Expedientes</div>
+    <div class="nav-item" onclick="showVista('expediente')" id="nav-exp">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span id="nav-exp-nombre">Seleccionar</span>
+    </div>
+    <div class="nav-section">Herramientas</div>
+    <div class="nav-item" onclick="showVista('paniales')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      Control de pañales
+    </div>
+    <div class="nav-item" onclick="showVista('carga')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Cargar planilla
+    </div>
+    <div class="nav-section">Acerca de</div>
+    <div class="nav-item" onclick="mostrarConfigAPIKey()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+      Clave API
+    </div>
+    <div class="nav-item" onclick="alert('Sistema Oasis v1.0\nDesarrollado para Residencia Geriátrica Oasis\nTandil, Buenos Aires')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Acerca de
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="vista" id="vista-dashboard">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-n" id="dash-total">44</div><div class="stat-l">Residentes activos</div></div>
+        <div class="stat-card verde"><div class="stat-n" id="dash-pami">0</div><div class="stat-l">Con PAMI</div></div>
+        <div class="stat-card naranja"><div class="stat-n" id="dash-ioma">0</div><div class="stat-l">Con IOMA</div></div>
+        <div class="stat-card rojo"><div class="stat-n" id="dash-alerg">0</div><div class="stat-l">Con alergias registradas</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Distribución por obra social</div></div>
+        <div id="dash-os-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Ingresos recientes</div></div>
+        <div id="dash-recientes"></div>
+      </div>
+    </div>
+
+    <!-- LISTA RESIDENTES -->
+    <div class="vista active" id="vista-lista">
+      <div class="search-row">
+        <input class="search-input" id="buscar" placeholder="🔍  Buscar por nombre, DNI, obra social, médico, piso..." oninput="filtrar()">
+        <button class="filter-btn on" id="fb-todos" onclick="setOS('todos',this)">Todos</button>
+        <button class="filter-btn" onclick="setOS('PAMI',this)">PAMI</button>
+        <button class="filter-btn" onclick="setOS('IOMA',this)">IOMA</button>
+        <button class="filter-btn" onclick="setOS('IOSFA',this)">IOSFA</button>
+        <button class="filter-btn" onclick="setOS('OSDE',this)">OSDE</button>
+        <button class="filter-btn" id="fb-activos" onclick="setEstado('activo',this)">Solo activos</button>
+        <button class="filter-btn" id="fb-archivo" onclick="setEstado('todos',this)">Ver todos</button>
+        <button class="btn btn-primary" onclick="nuevoResidente()">+ Nuevo residente</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="res-table">
+          <thead><tr>
+            <th>Residente</th><th>Obra Social</th><th>Médico</th><th>Contacto</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+      </div>
+      <div style="font-size:12px;color:var(--gris-t);text-align:right;margin-top:.5rem" id="contadorRes"></div>
+    </div>
+
+    <!-- EXPEDIENTE -->
+    <div class="vista" id="vista-expediente">
+      <div class="back-row">
+        <button class="btn" onclick="showVista('lista')">← Volver a la lista</button>
+        <span class="saved-chip" id="savedChip">✓ Guardado</span>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="guardarExp()">💾 Guardar</button>
+      </div>
+
+      <div class="exp-header">
+        <div class="exp-avatar" id="expAvatar">?</div>
+        <div>
+          <div class="exp-nombre" id="expNombre">—</div>
+          <div class="exp-meta" id="expMeta">—</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:.75rem">
+          <div id="expBadge"></div>
+          <div id="expEstadoBadge"></div>
+          <button class="btn btn-sm" onclick="mostrarCambioEstado()" title="Cambiar estado">⚙️ Estado</button>
+        </div>
+      </div>
+
+    <!-- MODAL API KEY -->
+  <div id="modalAPIKey" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center">
+    <div style="background:var(--blanco);border-radius:var(--radio-lg);padding:1.5rem;width:460px;box-shadow:var(--sombra-lg)">
+      <div style="font-size:17px;font-weight:600;margin-bottom:.5rem">🔑 Configurar clave API</div>
+      <p style="font-size:13px;color:var(--gris-t);margin-bottom:1.25rem;line-height:1.6">
+        Para analizar imágenes con IA necesitás ingresar la clave API de Anthropic. Se guarda solo en este navegador y no se comparte con nadie.
+      </p>
+      <div class="fi" style="margin-bottom:1.25rem">
+        <label>Clave API de Anthropic (empieza con sk-ant-...)</label>
+        <input id="inputAPIKey" type="password" placeholder="sk-ant-api03-...">
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn" onclick="document.getElementById('modalAPIKey').style.display='none'">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarAPIKey()">Guardar clave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ESTADO -->
+    <div id="modalEstado" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center">
+      <div style="background:var(--blanco);border-radius:var(--radio-lg);padding:1.5rem;width:420px;box-shadow:var(--sombra-lg)">
+        <div style="font-size:16px;font-weight:600;margin-bottom:.5rem">Cambiar estado del residente</div>
+        <div style="font-size:13px;color:var(--gris-t);margin-bottom:1.25rem" id="modalEstadoNombre"></div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem">
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border:1.5px solid var(--gris-b);border-radius:var(--radio);cursor:pointer" id="opt-activo">
+            <input type="radio" name="estadoRes" value="activo" style="width:16px;height:16px">
+            <div><div style="font-weight:600">&#x2705; Activo</div><div style="font-size:12px;color:var(--gris-t)">Residente en la residencia</div></div>
+          </label>
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border:1.5px solid var(--gris-b);border-radius:var(--radio);cursor:pointer" id="opt-alta">
+            <input type="radio" name="estadoRes" value="alta" style="width:16px;height:16px">
+            <div><div style="font-weight:600">&#x1F3E0; Alta</div><div style="font-size:12px;color:var(--gris-t)">Egres&#xF3; de la residencia &#x2014; expediente archivado</div></div>
+          </label>
+          <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border:1.5px solid var(--gris-b);border-radius:var(--radio);cursor:pointer" id="opt-fallecido">
+            <input type="radio" name="estadoRes" value="fallecido" style="width:16px;height:16px">
+            <div><div style="font-weight:600">&#x1F54A;&#xFE0F; Fallecido</div><div style="font-size:12px;color:var(--gris-t)">Expediente archivado con respeto</div></div>
+          </label>
+        </div>
+        <div class="fi" style="margin-bottom:1.25rem">
+          <label>Fecha de egreso / Observaciones</label>
+          <input id="estadoFecha" placeholder="ej: 01/06/2026 - Alta voluntaria">
+        </div>
+        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+          <button class="btn" onclick="cerrarModalEstado()">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmarEstado()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+      <div class="exp-tabs">
+        <button class="etab active" onclick="showETab('datos',this)">📋 Datos</button>
+        <button class="etab" onclick="showETab('hc',this)">🩺 Historia clínica</button>
+        <button class="etab" onclick="showETab('meds',this)">💊 Medicación</button>
+        <button class="etab" onclick="showETab('ctrl',this)">📊 Controles</button>
+        <button class="etab" onclick="showETab('dieta',this)">🥗 Dieta</button>
+        <button class="etab" onclick="showETab('paniales',this)">🧷 Pañales</button>
+        <button class="etab" onclick="showETab('estudios',this)">🔬 Estudios</button>
+      </div>
+
+      <div class="card">
+        <!-- DATOS -->
+        <div class="epanel active" id="ep-datos">
+          <div class="top-datos">
+            <div>
+              <div class="foto-box" onclick="document.getElementById('fotoInput').click()" title="Agregar foto">
+                <div id="fotoPlaceholder">📷<br>Foto</div>
+                <img id="fotoPreview" style="display:none" src="" alt="">
+              </div>
+              <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="cargarFoto(this)">
+            </div>
+            <div style="flex:1">
+              <div class="section-label">Datos personales</div>
+              <div class="form-grid">
+                <div class="fi"><label>Apellido/s</label><input id="fApellido" oninput="actualizarHeader()"></div>
+                <div class="fi"><label>Nombre/s</label><input id="fNombre" oninput="actualizarHeader()"></div>
+                <div class="fi"><label>Fecha de nacimiento</label><input type="date" id="fFnac"></div>
+                <div class="fi"><label>Edad</label><input id="fEdad" placeholder="—"></div>
+                <div class="fi"><label>DNI / CUIL</label><input id="fDni"></div>
+                <div class="fi"><label>Estado civil</label>
+                  <select id="fEcivil"><option value="">—</option><option>Soltero/a</option><option>Casado/a</option><option>Viudo/a</option><option>Divorciado/a</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-label">Asignación en la residencia</div>
+          <div class="form-grid">
+            <div class="fi"><label>Habitación / Piso</label><input id="fHab" oninput="actualizarHeader()"></div>
+            <div class="fi"><label>Tipo</label><select id="fTipo"><option value="">—</option><option>Individual</option><option>Doble</option><option>Triple</option></select></div>
+            <div class="fi"><label>Fecha de ingreso</label><input type="date" id="fIngreso"></div>
+            <div class="fi"><label>Modalidad</label><select id="fModalidad"><option value="">—</option><option>Permanente</option><option>Temporal</option><option>Respiro</option></select></div>
+          </div>
+          <div class="section-label">Obra social y médico</div>
+          <div class="form-grid">
+            <div class="fi"><label>Obra Social / Prepaga</label><input id="fOS" oninput="actualizarHeader()"></div>
+            <div class="fi"><label>Nº de afiliado</label><input id="fNAfil"></div>
+            <div class="fi"><label>Clínica de referencia</label><input id="fClinica"></div>
+            <div class="fi"><label>Médico de cabecera</label><input id="fMedico"></div>
+            <div class="fi"><label>Teléfono médico</label><input id="fMedTel"></div>
+          </div>
+          <div class="section-label">Responsable / Familiar</div>
+          <div class="form-grid">
+            <div class="fi"><label>Nombre</label><input id="fRespNombre"></div>
+            <div class="fi"><label>Vínculo</label><input id="fRespVinculo" placeholder="Hijo/a, Cónyuge..."></div>
+            <div class="fi"><label>DNI</label><input id="fRespDni"></div>
+            <div class="fi"><label>Teléfono</label><input id="fRespTel"></div>
+            <div class="fi full"><label>Correo electrónico</label><input id="fRespEmail"></div>
+          </div>
+          <div class="section-label">Datos médicos básicos</div>
+          <div class="form-grid">
+            <div class="fi"><label>Grupo sanguíneo</label>
+              <select id="fGrupo"><option value="">—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+            </div>
+            <div class="fi"><label>Movilidad</label>
+              <select id="fMovilidad"><option value="">—</option><option>Autónomo/a</option><option>Con ayuda</option><option>Silla de ruedas</option><option>Encamado/a</option></select>
+            </div>
+            <div class="fi full"><label>Alergias conocidas</label><input id="fAlergias"></div>
+            <div class="fi full"><label>Diagnósticos principales</label><textarea id="fDiag"></textarea></div>
+          </div>
+        </div>
+
+        <!-- HISTORIA CLÍNICA -->
+        <div class="epanel" id="ep-hc">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="card-title">Evoluciones médicas</div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-sm" onclick="showFotoEvol(true)" title="Subir foto de evolución escrita a mano">📷 Foto de evolución</button>
+              <button class="btn btn-primary btn-sm" onclick="showFEvol(true)">+ Nueva evolución</button>
+            </div>
+          </div>
+
+          <!-- FORMULARIO FOTO EVOLUCIÓN -->
+          <div class="form-card" id="formFotoEvol" style="display:none;margin-bottom:1rem;border-color:var(--verde)">
+            <div style="font-size:14px;font-weight:600;color:var(--verde);margin-bottom:.75rem">📷 Transcribir evolución desde foto</div>
+            <p style="font-size:13px;color:var(--txt-s);margin-bottom:1rem;line-height:1.6">
+              Subí una foto de la hoja de evolución escrita a mano por el médico. Claude va a leer el texto y completar los campos automáticamente.
+            </p>
+            <div id="dropZoneEvol"
+              onclick="document.getElementById('fotoEvolInput').click()"
+              style="border:2px dashed var(--gris-b);border-radius:var(--radio);padding:1.5rem;text-align:center;cursor:pointer;background:var(--gris);margin-bottom:.75rem;transition:border .15s">
+              <div style="font-size:28px;margin-bottom:.25rem">📄</div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt-s)">Hacé clic para seleccionar la foto</div>
+              <div style="font-size:12px;color:var(--gris-t)">JPG o PNG — foto de la hoja de evolución</div>
+            </div>
+            <input type="file" id="fotoEvolInput" accept="image/*" style="display:none" onchange="previsualizarFotoEvol(this)">
+            <div id="previewFotoEvol" style="display:none;margin-bottom:.75rem">
+              <img id="imgFotoEvol" src="" alt="Vista previa" style="width:100%;max-height:320px;object-fit:contain;border-radius:var(--radio);border:1px solid var(--gris-b)">
+            </div>
+            <div id="resultadoFotoEvol" style="display:none;margin-bottom:.75rem"></div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="showFotoEvol(false)">Cancelar</button>
+              <button class="btn btn-sm" id="btnTranscribir" onclick="transcribirEvolucion()" style="display:none;background:var(--verde-l);color:var(--verde);border-color:var(--verde)">
+                🔍 Transcribir y cargar
+              </button>
+            </div>
+          </div>
+          <div id="evolList"></div>
+          <div class="form-card" id="formEvol" style="display:none">
+            <div class="form-grid">
+              <div class="fi"><label>Fecha</label><input type="date" id="evolFecha"></div>
+              <div class="fi"><label>Profesional</label><input id="evolAutor"></div>
+              <div class="fi full"><label>Evolución / Observaciones</label><textarea id="evolTexto" style="min-height:100px"></textarea></div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="showFEvol(false)">Cancelar</button>
+              <button class="btn btn-primary" onclick="guardarEvol()">Guardar evolución</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEDICACIÓN -->
+        <div class="epanel" id="ep-meds">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="card-title">Tratamiento farmacológico</div>
+            <button class="btn btn-primary btn-sm" onclick="showFMed(true)">+ Agregar</button>
+          </div>
+          <div class="med-head"><span>Medicamento</span><span>Dosis</span><span>Vía</span><span></span><span></span></div>
+          <div id="medList"></div>
+          <div class="form-card" id="formMed" style="display:none">
+            <div class="form-grid">
+              <div class="fi"><label>Medicamento</label><input id="mNombre" placeholder="Nombre comercial o genérico"></div>
+              <div class="fi"><label>Dosis</label><input id="mDosis" placeholder="ej: 10 mg"></div>
+              <div class="fi"><label>Frecuencia</label>
+                <select id="mFrec"><option>—</option><option>Una vez al día</option><option>Dos veces al día</option><option>Tres veces al día</option><option>Cada 8 horas</option><option>Cada 12 horas</option><option>A demanda</option></select>
+              </div>
+              <div class="fi"><label>Vía</label>
+                <select id="mVia"><option>—</option><option>Oral</option><option>Inyectable</option><option>Sublingual</option><option>Transdérmica</option><option>Inhalatoria</option></select>
+              </div>
+              <div class="fi full"><label>Observaciones</label><input id="mObs"></div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="showFMed(false)">Cancelar</button>
+              <button class="btn btn-primary" onclick="guardarMed()">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div class="epanel" id="ep-ctrl">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="card-title">Controles de enfermería</div>
+            <button class="btn btn-primary btn-sm" onclick="showFCtrl(true)">+ Nuevo control</button>
+          </div>
+          <div class="ctrl-head"><span>Fecha</span><span>Turno</span><span>TA</span><span>FC</span><span>Temp.</span><span>SatO₂</span><span>Catarsis</span><span>Diuresis</span><span>Novedades</span></div>
+          <div id="ctrlList"></div>
+          <div class="form-card" id="formCtrl" style="display:none">
+            <div class="form-grid">
+              <div class="fi"><label>Fecha</label><input type="date" id="ctrlFecha"></div>
+              <div class="fi"><label>Turno</label>
+                <select id="ctrlTurno"><option>Mañana (06-14)</option><option>Tarde (14-22)</option><option>Noche (22-06)</option></select>
+              </div>
+              <div class="fi"><label>TA (mmHg)</label><input id="ctrlTA" placeholder="120/80"></div>
+              <div class="fi"><label>FC (lpm)</label><input type="number" id="ctrlFC"></div>
+              <div class="fi"><label>Temperatura (°C)</label><input type="number" step="0.1" id="ctrlTemp"></div>
+              <div class="fi"><label>SatO₂ (%)</label><input type="number" id="ctrlSat"></div>
+              <div class="fi"><label>Catarsis</label>
+                <select id="ctrlCat"><option value="">—</option><option>Normal</option><option>Constipado/a</option><option>Diarrea</option><option>Sin registro</option></select>
+              </div>
+              <div class="fi"><label>Diuresis (ml)</label><input type="number" id="ctrlDiu"></div>
+              <div class="fi full"><label>Novedades</label><textarea id="ctrlObs"></textarea></div>
+              <div class="fi"><label>Enfermera/o</label><input id="ctrlEnf"></div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="showFCtrl(false)">Cancelar</button>
+              <button class="btn btn-primary" onclick="guardarCtrl()">Guardar control</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAÑALES -->
+        <div class="epanel" id="ep-paniales">
+          <div class="section-label">Configuración</div>
+          <div class="form-grid" style="margin-bottom:1rem">
+            <div class="fi">
+              <label>¿Usa pañales?</label>
+              <select id="pUsaPaniales" onchange="guardarConfigPaniales()">
+                <option value="no">No</option>
+                <option value="si">Sí</option>
+              </select>
+            </div>
+            <div class="fi">
+              <label>Pañales por día</label>
+              <input type="number" id="pPorDia" min="1" max="10" placeholder="ej: 4" onchange="guardarConfigPaniales()">
+            </div>
+            <div class="fi">
+              <label>Alerta cuando queden menos de</label>
+              <input type="number" id="pAlerta" min="1" placeholder="ej: 10" onchange="guardarConfigPaniales()">
+            </div>
+          </div>
+
+          <div id="pPanelStock" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem">
+              <div style="background:var(--azul-l);border-radius:var(--radio-lg);padding:1rem;text-align:center">
+                <div style="font-size:28px;font-weight:700;color:var(--azul)" id="pStockActual">0</div>
+                <div style="font-size:12px;color:var(--gris-t)">Stock actual</div>
+              </div>
+              <div style="background:var(--verde-l);border-radius:var(--radio-lg);padding:1rem;text-align:center">
+                <div style="font-size:28px;font-weight:700;color:var(--verde)" id="pDiasRestantes">0</div>
+                <div style="font-size:12px;color:var(--gris-t)">Días restantes</div>
+              </div>
+              <div style="background:var(--naranja-l);border-radius:var(--radio-lg);padding:1rem;text-align:center">
+                <div style="font-size:28px;font-weight:700;color:var(--naranja)" id="pTotalUsado">0</div>
+                <div style="font-size:12px;color:var(--gris-t)">Total usado</div>
+              </div>
+            </div>
+
+            <div id="pAlertaDiv" style="display:none" class="alert" style="background:var(--rojo-l);color:var(--rojo);border:1px solid var(--rojo);margin-bottom:1rem">
+              ⚠ Stock bajo — avisarle a la familia
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+              <div class="section-label" style="margin:0;border:none">Movimientos</div>
+              <button class="btn btn-primary btn-sm" onclick="showFPanial(true)">+ Registrar entrega</button>
+            </div>
+
+            <div class="form-card" id="formPanial" style="display:none;margin-bottom:1rem">
+              <div class="form-grid">
+                <div class="fi"><label>Fecha</label><input type="date" id="pFecha"></div>
+                <div class="fi"><label>Cantidad recibida</label><input type="number" id="pCantidad" min="1" placeholder="ej: 30"></div>
+                <div class="fi full"><label>Observaciones</label><input id="pObs" placeholder="ej: Trajo familia / Comprado por residencia"></div>
+              </div>
+              <div style="display:flex;gap:.5rem;justify-content:flex-end">
+                <button class="btn" onclick="showFPanial(false)">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarEntregaPanial()">Guardar</button>
+              </div>
+            </div>
+
+            <div id="pMovimientos"></div>
+          </div>
+        </div>
+
+        <!-- ESTUDIOS -->
+        <div class="epanel" id="ep-estudios">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="card-title">🔬 Estudios y laboratorios</div>
+            <button class="btn btn-primary btn-sm" onclick="showFEstudio(true)">+ Cargar estudio</button>
+          </div>
+
+          <div class="form-card" id="formEstudio" style="display:none;margin-bottom:1rem">
+            <div class="form-grid">
+              <div class="fi"><label>Tipo de estudio</label>
+                <select id="estTipo">
+                  <option value="">— Seleccionar —</option>
+                  <option>Laboratorio</option>
+                  <option>Radiografía</option>
+                  <option>Ecografía</option>
+                  <option>Electrocardiograma</option>
+                  <option>Tomografía</option>
+                  <option>Resonancia</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+              <div class="fi"><label>Fecha del estudio</label><input type="date" id="estFecha"></div>
+              <div class="fi"><label>Médico / Laboratorio</label><input id="estMedico" placeholder="ej: Lab. Central, Dr. Gómez"></div>
+              <div class="fi full"><label>Observaciones</label><input id="estObs" placeholder="—"></div>
+            </div>
+
+            <div style="margin-bottom:1rem">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t);display:block;margin-bottom:6px">Imagen del estudio (foto de WhatsApp, PDF, etc.)</label>
+              <div id="dropEstudio" onclick="document.getElementById('estudioInput').click()"
+                style="border:2px dashed var(--gris-b);border-radius:var(--radio);padding:1.25rem;text-align:center;cursor:pointer;background:var(--gris);transition:border .15s">
+                <div style="font-size:24px;margin-bottom:.25rem">📎</div>
+                <div style="font-size:13px;font-weight:600;color:var(--txt-s)">Tocá para seleccionar imagen o PDF</div>
+                <div style="font-size:12px;color:var(--gris-t)">JPG, PNG o PDF — foto del WhatsApp</div>
+              </div>
+              <input type="file" id="estudioInput" accept="image/*,application/pdf" style="display:none" onchange="previsualizarEstudio(this)">
+            <div id="btnLimpiarImg" style="display:none;margin-top:.5rem">
+              <button class="btn btn-sm" onclick="limpiarEstudioImg()" style="font-size:12px">🗑 Quitar imagen y cargar otra</button>
+            </div>
+            </div>
+
+            <div id="previewEstudio" style="display:none;margin-bottom:1rem">
+              <img id="imgEstudio" src="" alt="Vista previa" style="width:100%;max-height:300px;object-fit:contain;border-radius:var(--radio);border:1px solid var(--gris-b)">
+            </div>
+
+            <div id="valoresExtraidos" style="display:none;margin-bottom:1rem"></div>
+
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+              <button class="btn" onclick="showFEstudio(false)">Cancelar</button>
+              <button class="btn btn-sm" id="btnExtraerValores" onclick="extraerValoresEstudio()" style="display:none;background:var(--verde-l);color:var(--verde);border-color:var(--verde)">
+                🔍 Extraer valores con IA
+              </button>
+              <button class="btn btn-primary" onclick="guardarEstudio()">💾 Guardar estudio</button>
+            </div>
+          </div>
+
+          <div id="listaEstudios"></div>
+        </div>
+
+        <!-- DIETA -->
+        <div class="epanel" id="ep-dieta">
+          <div class="section-label">Plan alimentario</div>
+          <div class="form-grid">
+            <div class="fi"><label>Tipo de dieta</label>
+              <select id="fDieta"><option value="">—</option><option>Normal</option><option>Hipocalórica</option><option>Hiposódica</option><option>Diabética</option><option>Blanda</option><option>Triturada</option><option>Licuada</option></select>
+            </div>
+            <div class="fi"><label>Textura</label>
+              <select id="fTextura"><option value="">—</option><option>Normal</option><option>Blanda</option><option>Triturada</option><option>Líquida</option></select>
+            </div>
+            <div class="fi full"><label>Intolerancias / Alergias alimentarias</label><input id="fIntol"></div>
+            <div class="fi full"><label>Suplementos nutricionales</label><input id="fSupl"></div>
+            <div class="fi full"><label>Observaciones</label><textarea id="fObsNut"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- VISTA CONTROL DE PAÑALES -->
+  <div class="vista" id="vista-paniales">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h2 style="font-size:18px;font-weight:600">🧷 Control de pañales</h2>
+      <button class="btn btn-primary btn-sm" onclick="registrarUsoHoy()">📋 Registrar uso del día</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+      <div class="stat-card"><div class="stat-n" id="pg-total">0</div><div class="stat-l">Residentes con pañales</div></div>
+      <div class="stat-card rojo"><div class="stat-n" id="pg-bajos">0</div><div class="stat-l">Con stock bajo</div></div>
+      <div class="stat-card naranja"><div class="stat-n" id="pg-sinstock">0</div><div class="stat-l">Sin stock</div></div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="res-table">
+        <thead><tr>
+          <th>Residente</th>
+          <th>Pañales/día</th>
+          <th>Stock actual</th>
+          <th>Días restantes</th>
+          <th>Estado</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="tabla-paniales"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISTA CARGA DE PLANILLA -->
+  <div class="vista" id="vista-carga">
+    <div class="card" style="max-width:680px;margin:0 auto">
+      <div class="card-header">
+        <div class="card-title">📷 Cargar planilla de controles</div>
+      </div>
+      <p style="font-size:14px;color:var(--txt-s);margin-bottom:1.25rem;line-height:1.7">
+        Sacá una foto de la planilla de controles completada a mano y subila acá.
+        Claude va a leer los datos y los va a cargar automáticamente en los expedientes de cada residente.
+      </p>
+
+      <div style="margin-bottom:1.25rem">
+        <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t);display:block;margin-bottom:6px">Tipo de planilla</label>
+        <select id="tipoPlanilla" style="width:100%;padding:8px 10px;border:1.5px solid var(--gris-b);border-radius:var(--radio);font-size:14px;background:var(--blanco);color:var(--txt)">
+          <option value="controles">Controles de enfermería (signos vitales)</option>
+          <option value="medicacion">Administración de medicación</option>
+          <option value="peso">Planilla de peso</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:1.25rem">
+        <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t);display:block;margin-bottom:6px">Foto de la planilla</label>
+        <div id="dropZone" onclick="document.getElementById('planillaInput').click()"
+          style="border:2px dashed var(--gris-b);border-radius:var(--radio-lg);padding:2.5rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--gris)">
+          <div style="font-size:36px;margin-bottom:.5rem">📄</div>
+          <div style="font-size:14px;font-weight:600;color:var(--txt-s)">Hacé clic para seleccionar una imagen</div>
+          <div style="font-size:12px;color:var(--gris-t);margin-top:4px">JPG, PNG o foto de cámara</div>
+        </div>
+        <input type="file" id="planillaInput" accept="image/*" style="display:none" onchange="previsualizarPlanilla(this)">
+      </div>
+
+      <div id="previewContainer" style="display:none;margin-bottom:1.25rem">
+        <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-t);display:block;margin-bottom:6px">Vista previa</label>
+        <img id="planillaPreview" src="" alt="Vista previa" style="width:100%;border-radius:var(--radio);border:1px solid var(--gris-b);max-height:400px;object-fit:contain">
+      </div>
+
+      <div id="resultadoCarga" style="display:none;margin-bottom:1.25rem"></div>
+
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-primary" id="btnAnalizarPlanilla" onclick="analizarPlanilla()" style="display:none">
+          🔍 Analizar y cargar datos
+        </button>
+        <button class="btn" onclick="limpiarCarga()">🗑 Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mmjsbsutbozyjhqsmpdh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DlCBtAhM1Dcd_Yycg5R4tA_RH5L6rKr';
+const FOTO_KEY = 'oasis_foto_'; // fotos siguen en localStorage (son muy grandes para DB)
+
+async function sbGet(table, id) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}&select=datos`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  const data = await r.json();
+  return data.length ? data[0].datos : null;
+}
+
+async function sbUpsert(table, id, datos, extra_id) {
+  const body = extra_id
+    ? JSON.stringify({ id, residente_id: extra_id, datos })
+    : JSON.stringify({ id, datos });
+  await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body
+  });
+}
+
+async function sbGetAll(table) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=id,datos`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  return await r.json();
+}
+
+const RESIDENTES_BASE = [
+  {id:'alasino',nombre:'ALASINO, Arnoldo',piso:'Sexto piso',dni:'5.873.130',obraSocial:'IOSFA',nAfiliado:'3-5873130',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'Dora',tel:'',ingreso:'2023-12-28',alergias:'',diag:'Parkinson'},
+  {id:'amezcua',nombre:'AMEZCUA, Nicolás',piso:'Primer piso',dni:'10.418.388',obraSocial:'IOMA',nAfiliado:'9612059408/92',clinica:'Sanatorio Tandil',medico:'Dr. Meijome, Franco',medicoTel:'',contacto:'Nicolas',tel:'2494-678488',ingreso:'2025-08-14',alergias:'',diag:''},
+  {id:'aranda',nombre:'ARANDA, Elida',piso:'Quinto piso',dni:'4.290.465',obraSocial:'PAMI',nAfiliado:'150143272102/00',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2024-05-11',alergias:'',diag:''},
+  {id:'belauzaran',nombre:'BELAUZARAN, Enrique',piso:'Sexto piso',dni:'5.380.572',obraSocial:'PAMI',nAfiliado:'150331124101 00',clinica:'Clínica Chacabuco',medico:'Dr. Nejamkin',medicoTel:'',contacto:'',tel:'',ingreso:'2025-11-03',alergias:'',diag:''},
+  {id:'colalongo',nombre:'COLALONGO, Laura',piso:'Tercer piso',dni:'4.015.574',obraSocial:'PAMI',nAfiliado:'130549841002 00',clinica:'Clínica Chacabuco',medico:'Dr. Mandarano, Luis',medicoTel:'',contacto:'Monica',tel:'2494-466550',ingreso:'2022-03-14',alergias:'',diag:''},
+  {id:'colombara',nombre:'COLOMBARA, Imelda',piso:'Cuarto piso',dni:'1.739.221',obraSocial:'IOSFA',nAfiliado:'1739221',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'Analia',tel:'',ingreso:'2025-04-07',alergias:'',diag:''},
+  {id:'coppini',nombre:'COPPINI, Ines',piso:'Primer piso',dni:'93.411.045',obraSocial:'PAMI',nAfiliado:'135618229506 00',clinica:'',medico:'',medicoTel:'',contacto:'Angel',tel:'2494-374134',ingreso:'2024-07-15',alergias:'',diag:''},
+  {id:'cuesta',nombre:'CUESTA, Miguel',piso:'Quinto piso',dni:'5.373.770',obraSocial:'OSSEG',nAfiliado:'05373770/00-42',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2024-10-04',alergias:'',diag:''},
+  {id:'dicarlo',nombre:'DI CARLO, Jose Santiago',piso:'Cuarto piso',dni:'5.251.177',obraSocial:'PAMI',nAfiliado:'1503566682300 00',clinica:'',medico:'',medicoTel:'',contacto:'Lucia',tel:'221-5467131',ingreso:'2021-11-16',alergias:'',diag:''},
+  {id:'duffau',nombre:'DUFFAU, Victoria',piso:'Quinto piso',dni:'4.467.282',obraSocial:'PAMI',nAfiliado:'150120187002/00',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2024-01-11',alergias:'',diag:''},
+  {id:'echegaray',nombre:'ECHEGARAY, Raul',piso:'Tercer piso',dni:'10.799.913',obraSocial:'OSPUNCPBA',nAfiliado:'1-10799913-0',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2024-08-16',alergias:'',diag:''},
+  {id:'fernandeza',nombre:'FERNANDEZ, Alicia',piso:'',dni:'5.669.035',obraSocial:'PAMI',nAfiliado:'',clinica:'Clínica Chacabuco',medico:'Dr. Minnard',medicoTel:'',contacto:'',tel:'',ingreso:'',alergias:'',diag:''},
+  {id:'fernandeze',nombre:'FERNANDEZ, Edith',piso:'Sexto piso',dni:'6.027.049',obraSocial:'PAMI',nAfiliado:'015021590819/00',clinica:'',medico:'Dra. Plana, Laura',medicoTel:'',contacto:'Evelyn',tel:'2494-207089',ingreso:'2022-09-01',alergias:'',diag:''},
+  {id:'fernandezhgo',nombre:'FERNANDEZ, Hugo',piso:'Cuarto piso',dni:'5.380.415',obraSocial:'IOMA',nAfiliado:'9606208688 92',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2023-07-04',alergias:'',diag:'Parkinson'},
+  {id:'forconi',nombre:'FORCONI, Alberto',piso:'',dni:'5.373.665',obraSocial:'PAMI',nAfiliado:'150886302707/00',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'',alergias:'',diag:''},
+  {id:'ghidella',nombre:'GHIDELLA, Teresa',piso:'Segundo piso',dni:'',obraSocial:'',nAfiliado:'',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2025-07-02',alergias:'',diag:''},
+  {id:'gnesi',nombre:'GNESI, Jorge',piso:'Cuarto piso',dni:'7.699.942',obraSocial:'PAMI',nAfiliado:'150691243105/00',clinica:'Clínica Chacabuco',medico:'',medicoTel:'',contacto:'Andrea',tel:'1136117267',ingreso:'2024-05-20',alergias:'',diag:'Diabetes'},
+  {id:'gonzalez',nombre:'GONZALEZ, Ricardo',piso:'Primer piso',dni:'5.497.499',obraSocial:'PAMI',nAfiliado:'150186340508/00',clinica:'Clínica Chacabuco',medico:'Dr. Gorini, Pablo',medicoTel:'',contacto:'',tel:'',ingreso:'2023-10-05',alergias:'',diag:'Diabetes'},
+  {id:'iriarte',nombre:'IRIARTE, Modesto',piso:'Segundo piso',dni:'5.387.568',obraSocial:'PAMI',nAfiliado:'140021868607 00',clinica:'Clínica Chacabuco',medico:'Dra. Saravia',medicoTel:'',contacto:'Adriana',tel:'1161582926',ingreso:'2023-09-03',alergias:'',diag:'Parkinson'},
+  {id:'iturralde',nombre:'ITURRALDE, Carlos',piso:'Tercer piso',dni:'5.371.548',obraSocial:'PAMI',nAfiliado:'150165025907 00',clinica:'HMRS',medico:'Dr. Wainberg, Gregorio',medicoTel:'',contacto:'Ana',tel:'2494-495779',ingreso:'2021-01-21',alergias:'',diag:'EPOC'},
+  {id:'kain',nombre:'KAIN, Nora',piso:'Segundo piso',dni:'2.040.847',obraSocial:'PAMI',nAfiliado:'150118951901 00',clinica:'HMRS',medico:'Dr. Franchino, Ruben',medicoTel:'',contacto:'Mariana',tel:'2494-598223',ingreso:'2021-06-23',alergias:'',diag:'HTA'},
+  {id:'librante',nombre:'LIBRANTE, Patricia',piso:'Tercer piso',dni:'13.750.198',obraSocial:'MEDIFE',nAfiliado:'01127941-01/334',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2024-04-12',alergias:'',diag:'Epilepsia'},
+  {id:'malignani',nombre:'MALIGNANI, Hilda',piso:'Quinto piso',dni:'3.820.900',obraSocial:'PAMI',nAfiliado:'155929620501/00',clinica:'',medico:'',medicoTel:'',contacto:'Valeria',tel:'2494-013349',ingreso:'2024-02-01',alergias:'',diag:'Hipotiroidismo'},
+  {id:'martinezl',nombre:'MARTINEZ, Lucía',piso:'Quinto piso',dni:'3.951.847',obraSocial:'IOSFA',nAfiliado:'3951847',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'Adriana',tel:'2494-552443',ingreso:'2022-07-12',alergias:'',diag:'Hipotiroidismo'},
+  {id:'negretti',nombre:'NEGRETTI, Teresita',piso:'Segundo piso',dni:'5.482.798',obraSocial:'PAMI',nAfiliado:'155486439002 00',clinica:'Clínica Chacabuco',medico:'Dra. Ricardo',medicoTel:'',contacto:'Emilia',tel:'2494-005206',ingreso:'2021-12-13',alergias:'',diag:'Parkinson / Diabetes'},
+  {id:'nogues',nombre:'NOGUES, Eva',piso:'Segundo piso',dni:'3.745.660',obraSocial:'PAMI',nAfiliado:'150140046501 00',clinica:'HMRS/Clínica Chacabuco',medico:'Dr. Colman, Anibal',medicoTel:'',contacto:'Romina',tel:'2494-662204',ingreso:'2023-06-02',alergias:'',diag:'Deterioro cognitivo'},
+  {id:'pedersen',nombre:'PEDERSEN, Else',piso:'Cuarto piso',dni:'2.041.554',obraSocial:'Soc. Italiana',nAfiliado:'2041/0',clinica:'Clínica Chacabuco',medico:'',medicoTel:'',contacto:'Ines',tel:'2494-621504',ingreso:'2021-08-08',alergias:'',diag:'Deterioro cognitivo'},
+  {id:'perezjc',nombre:'PEREZ, Juan Carlos',piso:'Tercer piso',dni:'4.786.503',obraSocial:'IOSFA',nAfiliado:'4786503',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2023-12-11',alergias:'',diag:'Hipotiroidismo'},
+  {id:'perezmaria',nombre:'PEREZ, María',piso:'Cuarto piso',dni:'3.815.761',obraSocial:'PAMI',nAfiliado:'150125782801/00',clinica:'Clínica Chacabuco',medico:'Dra. Lens, Diana',medicoTel:'',contacto:'Marcelo',tel:'2494-631844',ingreso:'2021-02-20',alergias:'Norfloxacina',diag:'Cardiopatía'},
+  {id:'perezml',nombre:'PEREZ, María Lujan',piso:'Segundo piso',dni:'5.441.045',obraSocial:'PAMI',nAfiliado:'115951978919 00',clinica:'HMRS',medico:'Dr. Winik, Uriel',medicoTel:'',contacto:'Maria',tel:'2494-552063',ingreso:'2021-10-23',alergias:'',diag:'EPOC'},
+  {id:'picchioni',nombre:'PICCHIONI, Norberto',piso:'',dni:'5.380.728',obraSocial:'PAMI',nAfiliado:'150321547909/00',clinica:'Clínica Chacabuco',medico:'Dr. Minnard',medicoTel:'',contacto:'',tel:'',ingreso:'',alergias:'',diag:''},
+  {id:'pissania',nombre:'PISSANI, Armando',piso:'Tercer piso',dni:'5.378.859',obraSocial:'PAMI',nAfiliado:'150112706005/00',clinica:'Clínica Chacabuco',medico:'Dr. Tringler, Matías',medicoTel:'',contacto:'',tel:'',ingreso:'2020-11-06',alergias:'',diag:'Deterioro cognitivo'},
+  {id:'pissanijc',nombre:'PISSANI, Juan Carlos',piso:'Tercer piso',dni:'5.386.734',obraSocial:'PAMI',nAfiliado:'150458354902/00',clinica:'Clínica Chacabuco',medico:'Dra. Plana, Laura',medicoTel:'',contacto:'Alejo',tel:'2494-374486',ingreso:'2020-03-12',alergias:'',diag:'Epilepsia'},
+  {id:'raineri',nombre:'RAINERI, Silvia',piso:'Cuarto piso',dni:'10.570.830',obraSocial:'PAMI',nAfiliado:'145951989305/00',clinica:'',medico:'Dra. Plana, Laura',medicoTel:'',contacto:'Celeste',tel:'',ingreso:'2025-01-04',alergias:'',diag:'Deterioro cognitivo'},
+  {id:'rodriguez',nombre:'RODRÍGUEZ, Leonor',piso:'Tercer piso',dni:'3.755.616',obraSocial:'PAMI',nAfiliado:'150822839005/00',clinica:'HMRS',medico:'',medicoTel:'',contacto:'Luis',tel:'2494-590790',ingreso:'2025-06-03',alergias:'',diag:'EPOC / FA'},
+  {id:'romo',nombre:'ROMO, Maria Esperanza',piso:'Quinto piso',dni:'5.462.024',obraSocial:'PAMI',nAfiliado:'150367858509/00',clinica:'',medico:'Dr. Colman',medicoTel:'',contacto:'',tel:'',ingreso:'2025-11-19',alergias:'',diag:'HTA'},
+  {id:'rosseli',nombre:'ROSSELI, Mirta',piso:'Quinto piso',dni:'4.928.535',obraSocial:'PAMI',nAfiliado:'150148173803 00',clinica:'HMRS/Clínica Chacabuco',medico:'Dr. Giorgis, Walter',medicoTel:'',contacto:'Rosana',tel:'2494-627301',ingreso:'2023-08-09',alergias:'',diag:''},
+  {id:'spinacci',nombre:'SPINACI, Blanca Sonia',piso:'Segundo piso',dni:'2.856.294',obraSocial:'IOMA',nAfiliado:'9602856294/00',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2025-10-14',alergias:'',diag:''},
+  {id:'suarez',nombre:'SUAREZ, Susana',piso:'Sexto piso',dni:'',obraSocial:'PAMI',nAfiliado:'150277822606/00',clinica:'Clínica Chacabuco',medico:'Dr. Gonzalez Guerra',medicoTel:'',contacto:'Luis',tel:'2494-634057',ingreso:'',alergias:'',diag:'Parkinson'},
+  {id:'varela',nombre:'VARELA, Teresa',piso:'Quinto piso',dni:'4.087.645',obraSocial:'PAMI',nAfiliado:'150135542401 00',clinica:'HMRS',medico:'Dr. Minard, Walter',medicoTel:'',contacto:'Carlos',tel:'2494-587280',ingreso:'2023-08-17',alergias:'',diag:'Epilepsia / HTA'},
+  {id:'vecino',nombre:'VECINO, Deolinda',piso:'',dni:'2.040.555',obraSocial:'PAMI',nAfiliado:'130617594902/00',clinica:'HMRS',medico:'',medicoTel:'',contacto:'Marcelo',tel:'',ingreso:'',alergias:'',diag:''},
+  {id:'venacio',nombre:'VENACIO, Norberto',piso:'Sexto piso',dni:'5.385.362',obraSocial:'OSDE',nAfiliado:'34203813 7 01',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'Leandro',tel:'2494-665945',ingreso:'2021-10-02',alergias:'',diag:'Epilepsia'},
+  {id:'vicente',nombre:'VICENTE, Omar',piso:'Segundo piso',dni:'10.259.172',obraSocial:'PAMI',nAfiliado:'150987106304/00',clinica:'HMRS',medico:'',medicoTel:'',contacto:'Elizabeth',tel:'',ingreso:'2025-05-25',alergias:'',diag:'Deterioro cognitivo'},
+  {id:'bellini',nombre:'BELLINI, Julian',piso:'Segundo piso',dni:'',obraSocial:'',nAfiliado:'',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'',alergias:'',diag:'Parkinson / Diabetes'},
+  {id:'martinezraquel',nombre:'MARTINEZ, Raquel',piso:'Tercer piso',dni:'',obraSocial:'OSSEG',nAfiliado:'009000617602000 4',clinica:'Clínica Chacabuco',medico:'',medicoTel:'',contacto:'Cecilia',tel:'2494-600749',ingreso:'2023-08-03',alergias:'',diag:''},
+  {id:'petrini',nombre:'PETRINI, Nelly',piso:'Cuarto piso',dni:'',obraSocial:'',nAfiliado:'',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'2025-12-01',alergias:'',diag:'Hipotiroidismo'},
+  {id:'zandona',nombre:'ZANDONA, Enrique',piso:'Tercer piso',dni:'12.349.166',obraSocial:'IOMA',nAfiliado:'9712349166',clinica:'Sanatorio Tandil',medico:'',medicoTel:'',contacto:'Mabel',tel:'',ingreso:'2024-09-02',alergias:'',diag:'Diabetes / Epilepsia'},
+];
+
+const MEDS_PRECARGADOS = {
+  "alasino": [
+    {
+      "nombre": "Venlafaxina 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levodopa + Bencerazida 250 mg",
+      "dosis": "1 comp Des / ¾ comp Alm-Mer / ¾ comp Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dutasteride 0,4 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Pimavanserina 34 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitaminas + asoc",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartan 80 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 50 mg",
+      "dosis": "1/4 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "amezcua": [
+    {
+      "nombre": "Levotiroxina 150 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clopidogrel 75 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Digoxina 0,25 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Acenocumarol 4 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Sacubitrilo + Valsartan 50 mg",
+      "dosis": "½ comp Des / ½ comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Insulina Glargina (LANTUS)",
+      "dosis": "18 UI",
+      "frec": "Desayuno",
+      "via": "Inyectable",
+      "obs": "Correcciones con Insulina Rápida (NOVORAPID) según tabla"
+    },
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "aranda": [
+    {
+      "nombre": "Omeprazol 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Paracetamol 1 gr",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Tramadol 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 1000 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan + Hidroclorotiazida 100/25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "belauzaran": [
+    {
+      "nombre": "Oxibutinina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Creon 25000 (Pancreatina 300 mg)",
+      "dosis": "1 caps Des / 2 caps Alm-Mer-Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Trimebutina + Diazepam 100/3,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Salmeterol + Fluticasona 25/250 mcg",
+      "dosis": "2 puff Des / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Budesonide + Formoterol 160/4,5 mcg",
+      "dosis": "2 puff Alm / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina XR 200 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Brexpiprazol 1 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Alm",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Crema de bismuto",
+      "dosis": "1 cucharada sopera Des y Alm",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Suplemento Nutricional (FORTICIP MAX)",
+      "dosis": "4 medidas Des / 4 medidas Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "colalongo": [
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "½ comp Des / ¼ comp Alm / ½ comp Mer / 1 comp Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 500 mg",
+      "dosis": "1 comp Des / 1 comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "colombara": [
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 25 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Atorvastatina 40 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lamotrigina 25 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro sulfato",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Suplemento Nutricional (FORTISIP)",
+      "dosis": "2 cucharadas Des / 2 cucharadas Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "coppini": [
+    {
+      "nombre": "Levotiroxina 112 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Nebivolol 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Furosemida 40 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "cuesta": [
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "½ comp Des / ½ comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "1 ¼ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clonazepam 0,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "dicarlo": [
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Sucralfato (suspensión)",
+      "dosis": "10 ml antes Alm / 10 ml antes Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Eszopiclona 3 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Silodosina 8 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 50 mg",
+      "dosis": "1/2 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Carboximetilcelulosa 1% gotas oftálmicas",
+      "dosis": "2 gotas por ojo",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "duffau": [
+    {
+      "nombre": "Omeprazol 20 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levotiroxina 75 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Trimebutina + Simeticona",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "echegaray": [
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Divalproato de sodio 500 mg",
+      "dosis": "1 comp Des / 1 comp Mer / 1 comp Al acostarse",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 40 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Tamsulosina 0,4 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clonazepam 1 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Alm / 2 comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Baclofeno 10 mg",
+      "dosis": "½ comp 7hs / ½ comp 15hs / ½ comp 23hs",
+      "frec": "Cada 8 horas",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Prucalopride 2 mg",
+      "dosis": "1/2 comp",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": "Lun/Mie/Vie/Dom"
+    },
+    {
+      "nombre": "Polietilenglicol 3350 sobres",
+      "dosis": "1 sobre",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": "Ver indicación días alternos"
+    },
+    {
+      "nombre": "Linaclotida 75 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": "Mar/Jue/Sab"
+    }
+  ],
+  "fernandeza": [
+    {
+      "nombre": "Omeprazol 20 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartán 80 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Meprednisona 8 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ezetimibe 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Zolpidem 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 50 mg",
+      "dosis": "1/4 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "fernandeze": [
+    {
+      "nombre": "Levotiroxina 50 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartan 80 mg",
+      "dosis": "1 comp Des / 1/2 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Donepecilo 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1½ comp Des / 1½ comp Alm / 1½ comp Mer",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "fernandezhgo": [
+    {
+      "nombre": "Levodopa + Carbidopa 250/25 mg",
+      "dosis": "½ comp Des / ¼ comp Alm / ½ comp Mer / ¼ comp Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Cilostazol 100 mg",
+      "dosis": "1/2 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Troxerutina + Escina 500/20 mg",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "forconi": [
+    {
+      "nombre": "Valsartan 160 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Nebivolol 5 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 450/50 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dapagliflozina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Digoxina 0,25 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": "Solo lunes a viernes"
+    },
+    {
+      "nombre": "Lecarnidipina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "ghidella": [
+    {
+      "nombre": "Vitamina D 100000 UI",
+      "dosis": "1 caps x mes",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Sertralina 100 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "¼ comp Alm / ½ comp Al acostarse",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Donepecilo 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 40 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "gnesi": [
+    {
+      "nombre": "Dabigatran 110 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Metformina 1 gr",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Enalapril 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Saxagliptina 5 mg",
+      "dosis": "1 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp Ayuno / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Glicazida 60 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Olanzapina 5 mg",
+      "dosis": "1/2 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ácido tióctico 600 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ácido valproico 500 mg",
+      "dosis": "½ comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Furosemida 40 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 1000 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "gonzalez": [
+    {
+      "nombre": "Valsartan 80 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 40 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Metformina 850 mg",
+      "dosis": "1 comp Des / 1 comp Alm / 1 comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Tamsulosina 0,4 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dutasteride 0,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 12,5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clopidogrel 75 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "iriarte": [
+    {
+      "nombre": "Valsartan 160 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levodopa + carbidopa 250/25 mg",
+      "dosis": "¾ comp Des / ½ comp Alm / ¾ comp Mer / ½ comp Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1 Des / 1 Alm / 1 Mer / 2 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Amlodipina 5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "iturralde": [
+    {
+      "nombre": "Salmeterol + Fluticasona 25/250 mcg",
+      "dosis": "2 puff Des / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dutasterida 0,5 mg + Tamsulosina 0,4 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Furosemida 40 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Montelukast 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "kain": [
+    {
+      "nombre": "Telmisartan 80 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Amlodipina 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + Ácido fólico",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina 300 mg",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Trimebutina + Simeticona 200 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 1 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Latanoprost 0,005% gotas oftálmicas",
+      "dosis": "1 gota en cada ojo",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lactulosa (suspensión)",
+      "dosis": "10 ml Alm / 10 ml Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "librante": [
+    {
+      "nombre": "Levotiroxina 100 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartan 160 mg",
+      "dosis": "½ comp Des / ½ comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Baclofeno 10 mg",
+      "dosis": "1 comp Des / 1 comp Alm / 1 comp Mer / 1 comp Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levetiracetam 500 mg",
+      "dosis": "3 comp Alm / 3 comp Al acostarse",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Acenocumarol 4 mg",
+      "dosis": "¼ comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "2 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 0,25 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omega 3",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitamina D3 100000 UI",
+      "dosis": "1 ampolla x mes",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dapagliflozina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ácido Bempedoico 180 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "malignani": [
+    {
+      "nombre": "Levotiroxina 25 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 0,5 mg",
+      "dosis": "½ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "martinezl": [
+    {
+      "nombre": "Levotiroxina 75 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lactulon (suspensión)",
+      "dosis": "1 cucharada",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Melatonina 3 mg",
+      "dosis": "1 comp",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "negretti": [
+    {
+      "nombre": "Levodopa + Carbidopa 250/25 mg",
+      "dosis": "1¼ comp Des / 1 Alm / 1¼ Mer / 1 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Metformina 850 mg",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levotiroxina 75 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lamotrigina 200 mg",
+      "dosis": "½ comp Des / 1 comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Venlafaxina 150 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Venlafaxina 75 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "½ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "½ comp Alm / ½ comp Mer / ½ comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Pimavanserina 34 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vit B12 + aminoácidos",
+      "dosis": "1 amp bebible",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Suplemento Nutricional (FORTISIP)",
+      "dosis": "2 cucharadas Des/Alm/Mer/Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "nogues": [
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Donepecilo 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Enalapril 10 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1 Des / 1 Mer / 1 Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Mesalazina 400 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 25 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "pedersen": [
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "¼ comp Alm / 1/4 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 500 mg",
+      "dosis": "1 comp Des / 1 comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levomepromazina 25 mg",
+      "dosis": "½ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "perezjc": [
+    {
+      "nombre": "Levotiroxina 200 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Donepecilo 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 20 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 0,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "perezmaria": [
+    {
+      "nombre": "Omeprazol 20 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Mononitrato de Isosorbide 60 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diltiazem 60 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 450/50 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "PENICILINA G Benzatínica 2.400.000 IM",
+      "dosis": "1 por mes",
+      "frec": "A demanda",
+      "via": "Inyectable",
+      "obs": "⚠ ALÉRGICA A NORFLOXACINA"
+    }
+  ],
+  "perezml": [
+    {
+      "nombre": "Montelukast 10 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Salmeterol + Fluticasona 50/500 mcg",
+      "dosis": "2 puff Des / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartán 160 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "picchioni": [
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1/4 comp Des / 1/4 comp Mer / 1/2 comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "pissania": [
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Tamsulosina 0,4 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Valsartan 80 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Amlodipina 5 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Troxerutina + asoc 500/150 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "pissanijc": [
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "½ comp Des / ¾ comp Alm / 1 comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levetiracetam 500 mg",
+      "dosis": "1 comp Des / ½ comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Biperideno 2 mg",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Cumarina + asoc 15/90 mg",
+      "dosis": "2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 1 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "raineri": [
+    {
+      "nombre": "Memantina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Donepecilo 10 mg",
+      "dosis": "1 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitamina E 1 gr",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1 comp Cena",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ropinirol 8 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ropinirol 4 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levodopa/Carbidopa 25/100 mg",
+      "dosis": "1/2 comp Des / 3/4 Alm / 1/2 Mer / 3/4 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "rodriguez": [
+    {
+      "nombre": "Rivaroxaban 15 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 25 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Montelukast 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Nebivolol 5 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Fluticasona + Salmeterol 25/250 mcg",
+      "dosis": "2 puff Des / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Budesonide + Formoterol 160/4,5 mcg",
+      "dosis": "2 puff cada 12 hs",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitamina D 100000 UI",
+      "dosis": "1 ampolla por mes",
+      "frec": "A demanda",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "romo": [
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Mer / 1 comp Cena",
+      "frec": "Tres veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "rosseli": [
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "1/4 Des / 1/2 Alm / 1/2 Mer / 1/2 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "spinacci": [
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Sertralina 50 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clonazepam 2 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1/2 comp Mer / 1/4 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc",
+      "dosis": "1 comp a media mañana",
+      "frec": "Una vez al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1/2 comp Des / 1/2 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hidroclorotiazida 50 mg",
+      "dosis": "1/4 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "suarez": [
+    {
+      "nombre": "Levodopa + Carbidopa 250/25 mg",
+      "dosis": "¼ comp Des/Alm/Mer/Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Hierro + asoc.",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Melatonina 3 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 25 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "varela": [
+    {
+      "nombre": "Levotiroxina 100 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Carbamazepina 200 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Espironolactona 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Nebivolol 5 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Furosemida 40 mg",
+      "dosis": "1/2 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 200 mg",
+      "dosis": "1/2 Des / 1/4 Alm / 1/4 Mer / 1 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Aspirina 100 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Salmeterol + Fluticasona 25/250 mcg",
+      "dosis": "2 puff Des / 2 puff Cena",
+      "frec": "Dos veces al día",
+      "via": "Inhalatoria",
+      "obs": ""
+    }
+  ],
+  "venacio": [
+    {
+      "nombre": "Bisoprolol 5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Sertralina 100 mg",
+      "dosis": "½ comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Carbamazepina 400 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clonazepam 2 mg",
+      "dosis": "1/2 comp",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Telmisartán 40 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lactulosa (jarabe)",
+      "dosis": "10 ml",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "vicente": [
+    {
+      "nombre": "Memantina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitamina b1 b6 b12 + asoc",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lamotrigina 50 mg",
+      "dosis": "1/2 comp Des / ½ comp Mer",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 2 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 100 mg",
+      "dosis": "¼ Des / ½ Alm / ½ Mer / ½ Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "zandona": [
+    {
+      "nombre": "Enalapril 10 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Clopidogrel 75 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levetiracetam 1 gr",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Metformina 1 gr",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Dapagliflozina 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 40 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Fenofibrato 160 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Insulina Glargina (LANTUS)",
+      "dosis": "12 unid Ayuno / 12 unid Cena",
+      "frec": "Dos veces al día",
+      "via": "Inyectable",
+      "obs": ""
+    },
+    {
+      "nombre": "Zolpidem 10 mg",
+      "dosis": "1 comp",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vitamina b1 b6 b12 5000 UI",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Ácido tióctico 600 mg",
+      "dosis": "1 comp",
+      "frec": "Merienda",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Oxibutinina 15 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Alprazolam 1 mg",
+      "dosis": "1 comp",
+      "frec": "Al acostarse",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "bellini": [
+    {
+      "nombre": "Paroxetina 20 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Vidagliptina 50 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Pixaban 2,5 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Rosuvastatina 20 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Gabapentina 300 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1½ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Levodopa carbidopa 250/25 mg",
+      "dosis": "1/2 Des / 1/4 Alm / 1/2 Mer / 1/4 Cena",
+      "frec": "Cuatro veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Metformina 850 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 200 mg",
+      "dosis": "1/2 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "martinezraquel": [
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Omeprazol 40 mg",
+      "dosis": "1 comp Ayuno / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Quetiapina 25 mg",
+      "dosis": "½ comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Diosmina + Hesperidina 500/50 mg",
+      "dosis": "1 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 10 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Codeína + Paracetamol 60/300 mg",
+      "dosis": "1 comp Des / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    }
+  ],
+  "petrini": [
+    {
+      "nombre": "Levotiroxina 25 mcg",
+      "dosis": "1 comp",
+      "frec": "Ayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Escitalopram 20 mg",
+      "dosis": "1/4 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lorazepam 2,5 mg",
+      "dosis": "1/2 comp Alm / 1 comp Cena",
+      "frec": "Dos veces al día",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Lactulosa (suspensión)",
+      "dosis": "10 ml",
+      "frec": "Almuerzo",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan + Hidroclorotiazida 50/12,5 mg",
+      "dosis": "1 comp",
+      "frec": "Desayuno",
+      "via": "Oral",
+      "obs": ""
+    },
+    {
+      "nombre": "Losartan 50 mg",
+      "dosis": "1 comp",
+      "frec": "Cena",
+      "via": "Oral",
+      "obs": ""
+    }
+  ]
+};
+
+// Precargar medicación al abrir expediente si no tiene meds cargados
+function precargarMeds(resId) {
+  if (MEDS_PRECARGADOS[resId]) {
+    const ex = extra[resId] || {evoluciones:[], meds:[], controles:[], dieta:{}};
+    if (!ex.meds || ex.meds.length === 0) {
+      ex.meds = MEDS_PRECARGADOS[resId];
+      extra[resId] = ex;
+    }
+  }
+}
+
+let residentes = JSON.parse(JSON.stringify(RESIDENTES_BASE));
+let extra = {};
+let expIdx = -1;
+let filtroOS = 'todos';
+let filtroEstado = 'activo'; // por defecto solo activos
+
+// ── API KEY MANAGEMENT ───────────────────────────────────────────
+function obtenerAPIKey() {
+  const key = localStorage.getItem('oasis_anthropic_key');
+  if (!key) {
+    mostrarConfigAPIKey();
+    return null;
+  }
+  return key;
+}
+
+function mostrarConfigAPIKey() {
+  document.getElementById('modalAPIKey').style.display = 'flex';
+}
+
+function guardarAPIKey() {
+  const key = document.getElementById('inputAPIKey').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    alert('La clave no parece válida. Debe empezar con sk-ant-');
+    return;
+  }
+  localStorage.setItem('oasis_anthropic_key', key);
+  document.getElementById('modalAPIKey').style.display = 'none';
+  alert('✅ Clave guardada correctamente. Ya podés usar el análisis de imágenes.');
+}
+
+// ── STORAGE (Supabase) ───────────────────────────────────────────
+function leerStorage(key) { try { const v=localStorage.getItem(key); return v?JSON.parse(v):null; } catch(e){return null;} }
+function guardarLocalStorage(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+async function initStorage() {
+  document.getElementById('storageChip').textContent = '🔄 Conectando...';
+  try {
+    // Cargar residentes desde Supabase
+    const rows = await sbGetAll('residentes');
+    if (rows && rows.length) {
+      rows.forEach(row => {
+        const s = row.datos;
+        const idx = residentes.findIndex(r => r.id === s.id);
+        if (idx >= 0) Object.assign(residentes[idx], s);
+        else residentes.push(s);
+      });
+    }
+    // Cargar extra de cada residente
+    const extraRows = await sbGetAll('extra');
+    if (extraRows && extraRows.length) {
+      extraRows.forEach(row => {
+        extra[row.id.replace('extra_','')] = row.datos;
+      });
+    }
+    // Residentes sin extra → inicializar
+    residentes.forEach(r => {
+      if (!extra[r.id]) extra[r.id] = { evoluciones:[], meds:[], controles:[], dieta:{} };
+    });
+    document.getElementById('storageChip').textContent = '☁️ Conectado — datos en la nube';
+    document.getElementById('storageChip').style.background = 'rgba(255,255,255,.2)';
+  } catch(e) {
+    document.getElementById('storageChip').textContent = '⚠️ Sin conexión — modo local';
+    residentes.forEach(r => {
+      extra[r.id] = { evoluciones:[], meds:[], controles:[], dieta:{} };
+    });
+  }
+  renderLista();
+  renderDashboard();
+}
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────
+function showVista(id) {
+  document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('vista-' + id).classList.add('active');
+  const navMap = {lista:'nav-item:nth-child(2)',dashboard:'nav-item:nth-child(3)'};
+  if (id==='lista') document.querySelectorAll('.nav-item')[1].classList.add('active');
+  else if (id==='dashboard') document.querySelectorAll('.nav-item')[2].classList.add('active');
+  else if (id==='expediente') document.getElementById('nav-exp').classList.add('active');
+}
+
+// ── LISTA ─────────────────────────────────────────────────────────
+function pillOS(os) {
+  if (!os) return '<span class="pill pill-otro">—</span>';
+  const u = os.toUpperCase();
+  if (u.includes('PAMI'))  return `<span class="pill pill-pami">PAMI</span>`;
+  if (u.includes('IOMA'))  return `<span class="pill pill-ioma">IOMA</span>`;
+  if (u.includes('IOSFA')) return `<span class="pill pill-iosfa">IOSFA</span>`;
+  if (u.includes('OSDE'))  return `<span class="pill pill-osde">OSDE</span>`;
+  return `<span class="pill pill-otro">${os}</span>`;
+}
+
+function renderLista() {
+  const q = (document.getElementById('buscar').value || '').toLowerCase();
+  const tbody = document.getElementById('tabla-body');
+  let visible = 0;
+  tbody.innerHTML = residentes.map((r, i) => {
+    const txt = (r.nombre+r.obraSocial+r.medico+r.dni+r.piso+r.contacto+r.diag).toLowerCase();
+    const mQ  = !q || txt.includes(q);
+    const mOS = filtroOS === 'todos' || r.obraSocial.toUpperCase().includes(filtroOS);
+    const estado = r.estado || 'activo';
+    const mEstado = filtroEstado === 'todos' || estado === filtroEstado;
+    if (!mQ || !mOS || !mEstado) return '';
+    visible++;
+    const estadoBadge = estado === 'fallecido'
+      ? '<span class="pill" style="background:#F3E8FF;color:#7C3AED">🕊️ Fallecido</span>'
+      : estado === 'alta'
+      ? '<span class="pill" style="background:#FEF3C7;color:#92400E">🏠 Alta</span>'
+      : '<span class="pill pill-ioma">✅ Activo</span>';
+    const rowStyle = estado !== 'activo' ? 'opacity:.6;background:#FAFAFA' : '';
+    return `<tr onclick="abrirExp(${i})" style="${rowStyle}">
+      <td><div class="res-name">${r.nombre}</div><div class="res-sub">${r.piso||'Sin piso'} ${r.ingreso?'· Ingreso: '+r.ingreso.split('-').reverse().join('/'):''}  </div></td>
+      <td>${pillOS(r.obraSocial)}</td>
+      <td style="font-size:13px;color:var(--txt-s)">${r.medico||'—'}</td>
+      <td style="font-size:13px">${r.contacto?(r.contacto+(r.tel?' · '+r.tel:'')):'—'}</td>
+      <td>${estadoBadge}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();abrirExp(${i})">Abrir →</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('contadorRes').textContent = `${visible} de ${residentes.length} residentes`;
+}
+
+function filtrar() { renderLista(); }
+function setOS(os, btn) {
+  filtroOS = os;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  // restaurar el filtro de estado activo
+  if (filtroEstado === 'activo') document.getElementById('fb-activos')?.classList.add('on');
+  renderLista();
+}
+
+function setEstado(estado, btn) {
+  filtroEstado = estado;
+  document.getElementById('fb-activos')?.classList.remove('on');
+  document.getElementById('fb-archivo')?.classList.remove('on');
+  btn.classList.add('on');
+  renderLista();
+}
+
+// ── ESTADO RESIDENTE ──────────────────────────────────────────────
+function mostrarCambioEstado() {
+  if (expIdx === -1) return;
+  const r = residentes[expIdx];
+  document.getElementById('modalEstadoNombre').textContent = r.nombre;
+  const estado = r.estado || 'activo';
+  document.querySelector(`input[name="estadoRes"][value="${estado}"]`).checked = true;
+  document.getElementById('estadoFecha').value = r.estadoObs || '';
+  // Resaltar opción seleccionada
+  document.querySelectorAll('[id^="opt-"]').forEach(el => el.style.borderColor = 'var(--gris-b)');
+  document.getElementById('opt-'+estado).style.borderColor = 'var(--azul)';
+  document.getElementById('modalEstado').style.display = 'flex';
+}
+
+function cerrarModalEstado() {
+  document.getElementById('modalEstado').style.display = 'none';
+}
+
+function confirmarEstado() {
+  const estado = document.querySelector('input[name="estadoRes"]:checked')?.value || 'activo';
+  const obs = document.getElementById('estadoFecha').value;
+  const r = residentes[expIdx];
+  r.estado = estado;
+  r.estadoObs = obs;
+  // Actualizar badge en header
+  actualizarBadgeEstado(estado);
+  sbUpsert('residentes', r.id, r).catch(()=>{});
+  guardarLocalStorage('oasis_bak_'+r.id, r);
+  cerrarModalEstado();
+  renderLista();
+  renderDashboard();
+  // Marcar filtro activos por defecto
+  setTimeout(() => {
+    document.getElementById('fb-activos')?.classList.add('on');
+  }, 100);
+}
+
+function actualizarBadgeEstado(estado) {
+  const badge = document.getElementById('expEstadoBadge');
+  if (estado === 'fallecido') badge.innerHTML = '<span class="pill" style="background:#F3E8FF;color:#7C3AED;font-size:13px">🕊️ Fallecido</span>';
+  else if (estado === 'alta') badge.innerHTML = '<span class="pill" style="background:#FEF3C7;color:#92400E;font-size:13px">🏠 Alta</span>';
+  else badge.innerHTML = '<span class="pill pill-ioma" style="font-size:13px">✅ Activo</span>';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard() {
+  const pami  = residentes.filter(r => r.obraSocial.toUpperCase().includes('PAMI')).length;
+  const ioma  = residentes.filter(r => r.obraSocial.toUpperCase().includes('IOMA')).length;
+  const alerg = residentes.filter(r => r.alergias).length;
+  document.getElementById('dash-total').textContent = residentes.length;
+  document.getElementById('dash-pami').textContent  = pami;
+  document.getElementById('dash-ioma').textContent  = ioma;
+  document.getElementById('dash-alerg').textContent = alerg;
+  // Barras OS
+  const osCounts = {};
+  residentes.forEach(r => { const k=r.obraSocial||'Sin datos'; osCounts[k]=(osCounts[k]||0)+1; });
+  const max = Math.max(...Object.values(osCounts));
+  document.getElementById('dash-os-bars').innerHTML = Object.entries(osCounts)
+    .sort((a,b)=>b[1]-a[1]).map(([os,n])=>`
+    <div style="display:flex;align-items:center;gap.75rem;margin-bottom:.5rem">
+      <div style="width:140px;font-size:13px;color:var(--txt-s);text-align:right;padding-right:.75rem">${os}</div>
+      <div style="flex:1;background:var(--gris);border-radius:99px;height:20px;overflow:hidden">
+        <div style="width:${Math.round(n/max*100)}%;background:var(--azul);height:100%;border-radius:99px;display:flex;align-items:center;padding-left:8px">
+          <span style="font-size:11px;color:#fff;font-weight:700">${n}</span>
+        </div>
+      </div>
+    </div>`).join('');
+  // Recientes (últimos 5 ingresos)
+  const recientes = [...residentes].filter(r=>r.ingreso).sort((a,b)=>b.ingreso.localeCompare(a.ingreso)).slice(0,5);
+  document.getElementById('dash-recientes').innerHTML = recientes.map(r=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--gris-b)">
+      <div><div style="font-size:14px;font-weight:600">${r.nombre}</div><div style="font-size:12px;color:var(--gris-t)">${r.piso||'Sin piso'}</div></div>
+      <div style="font-size:13px;color:var(--gris-t)">${r.ingreso.split('-').reverse().join('/')}</div>
+    </div>`).join('');
+}
+
+// ── EXPEDIENTE ────────────────────────────────────────────────────
+function abrirExp(i) {
+  expIdx = i;
+  const r = residentes[i];
+  document.getElementById('nav-exp-nombre').textContent = r.nombre.split(',')[0];
+  // Header
+  const iniciales = (r.nombre.split(',')[0]||'?').trim().substring(0,2).toUpperCase();
+  document.getElementById('expAvatar').innerHTML = iniciales;
+  document.getElementById('expNombre').textContent = r.nombre;
+  document.getElementById('expMeta').textContent = (r.piso||'Sin piso') + (r.ingreso?' · Ingreso: '+r.ingreso.split('-').reverse().join('/'):'');
+  document.getElementById('expBadge').innerHTML = pillOS(r.obraSocial);
+  actualizarBadgeEstado(r.estado || 'activo');
+  // Foto
+  const foto = leerStorage(FOTO_KEY + r.id);
+  if (foto) {
+    document.getElementById('expAvatar').innerHTML = `<img src="${foto}" alt="">`;
+    document.getElementById('fotoPreview').src = foto;
+    document.getElementById('fotoPreview').style.display = 'block';
+    document.getElementById('fotoPlaceholder').style.display = 'none';
+  } else {
+    document.getElementById('fotoPreview').style.display = 'none';
+    document.getElementById('fotoPlaceholder').style.display = '';
+  }
+  // Campos
+  const partes = r.nombre.split(',');
+  const rd = {...r, apellido_solo: partes[0]||'', nombre_solo: (partes[1]||'').trim() };
+  const map = {
+    fApellido:'apellido_solo', fNombre:'nombre_solo',
+    fFnac:'fnac', fEdad:'edad', fDni:'dni', fEcivil:'ecivil',
+    fHab:'piso', fTipo:'tipoHab', fIngreso:'ingreso', fModalidad:'modalidad',
+    fOS:'obraSocial', fNAfil:'nAfiliado', fClinica:'clinica',
+    fMedico:'medico', fMedTel:'medicoTel',
+    fRespNombre:'contacto', fRespVinculo:'respVinculo',
+    fRespDni:'respDni', fRespTel:'tel', fRespEmail:'respEmail',
+    fGrupo:'grupo', fMovilidad:'movilidad',
+    fAlergias:'alergias', fDiag:'diag'
+  };
+  Object.entries(map).forEach(([fid,key]) => {
+    const el = document.getElementById(fid);
+    if (el) el.value = rd[key] || '';
+  });
+  // Dieta
+  const ex = extra[r.id] || {};
+  const diet = ex.dieta || {};
+  ['fDieta','fTextura','fIntol','fSupl','fObsNut'].forEach(id => { const el=document.getElementById(id); if(el) el.value=diet[id]||''; });
+  precargarMeds(r.id);
+  const exFinal = extra[r.id] || {};
+  renderEvol(exFinal.evoluciones||[]);
+  renderMeds(exFinal.meds||[]);
+  renderPaniales(r.id);
+  renderEstudios((extra[r.id]||{}).estudios||[]);
+  renderCtrl(ex.controles||[]);
+  showETab('datos', document.querySelector('.etab'));
+  showVista('expediente');
+}
+
+function actualizarHeader() {
+  const ap = document.getElementById('fApellido').value;
+  const nom= document.getElementById('fNombre').value;
+  const hab= document.getElementById('fHab').value;
+  document.getElementById('expNombre').textContent = ap&&nom ? ap+', '+nom : ap||nom||'—';
+  document.getElementById('expMeta').textContent = hab||'Sin piso';
+}
+
+function cargarFoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const src = e.target.result;
+    document.getElementById('expAvatar').innerHTML = `<img src="${src}" alt="">`;
+    document.getElementById('fotoPreview').src = src;
+    document.getElementById('fotoPreview').style.display = 'block';
+    document.getElementById('fotoPlaceholder').style.display = 'none';
+    guardarStorage(FOTO_KEY + residentes[expIdx].id, src);
+  };
+  reader.readAsDataURL(file);
+}
+
+function guardarExp() {
+  const r = residentes[expIdx];
+  const ap = document.getElementById('fApellido').value;
+  const nom= document.getElementById('fNombre').value;
+  if (ap||nom) r.nombre = (ap + (nom?', '+nom:'')).trim();
+  // Guardar TODOS los campos — inputs, selects y textareas
+  const camposSimples = {
+    piso:'fHab', ingreso:'fIngreso', obraSocial:'fOS', nAfiliado:'fNAfil',
+    clinica:'fClinica', medico:'fMedico', medicoTel:'fMedTel',
+    contacto:'fRespNombre', respVinculo:'fRespVinculo', respDni:'fRespDni',
+    tel:'fRespTel', respEmail:'fRespEmail',
+    dni:'fDni', fnac:'fFnac', edad:'fEdad', ecivil:'fEcivil',
+    tipoHab:'fTipo', modalidad:'fModalidad',
+    grupo:'fGrupo', movilidad:'fMovilidad',
+    alergias:'fAlergias', diag:'fDiag'
+  };
+  Object.entries(camposSimples).forEach(([key, fid]) => {
+    const el = document.getElementById(fid);
+    if (el) r[key] = el.value;
+  });
+  const ex = extra[r.id] || {evoluciones:[],meds:[],controles:[],dieta:{}};
+  ex.dieta = {fDieta:document.getElementById('fDieta').value,fTextura:document.getElementById('fTextura').value,fIntol:document.getElementById('fIntol').value,fSupl:document.getElementById('fSupl').value,fObsNut:document.getElementById('fObsNut').value};
+  extra[r.id] = ex;
+  // Guardar en Supabase
+  sbUpsert('residentes', r.id, r).catch(()=>{});
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  // Backup local
+  guardarLocalStorage('oasis_bak_'+r.id, r);
+  // flash
+  const chip = document.getElementById('savedChip');
+  chip.classList.add('on'); setTimeout(()=>chip.classList.remove('on'), 2500);
+  document.getElementById('expNombre').textContent = r.nombre;
+  renderLista(); renderDashboard();
+}
+
+function nuevoResidente() {
+  const id = 'res' + Date.now();
+  residentes.push({id,nombre:'NUEVO, Residente',piso:'',dni:'',obraSocial:'',nAfiliado:'',clinica:'',medico:'',medicoTel:'',contacto:'',tel:'',ingreso:'',alergias:'',diag:'',ecivil:'',fnac:'',edad:'',grupo:'',movilidad:'',respVinculo:'',respDni:'',respEmail:'',tipoHab:'',modalidad:''});
+  extra[id] = {evoluciones:[],meds:[],controles:[],dieta:{}};
+  renderLista();
+  abrirExp(residentes.length - 1);
+}
+
+function showETab(id, el) {
+  document.querySelectorAll('.epanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.etab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('ep-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── ESTUDIOS Y LABORATORIOS ───────────────────────────────────────
+let estudioBase64 = null;
+let estudioMediaType = 'image/jpeg';
+
+function showFEstudio(v) {
+  document.getElementById('formEstudio').style.display = v ? 'block' : 'none';
+  if (v) {
+    document.getElementById('estFecha').value = new Date().toISOString().split('T')[0];
+    limpiarEstudioImg();
+  }
+}
+
+function limpiarEstudioImg() {
+  estudioBase64 = null;
+  estudioMediaType = 'image/jpeg';
+  document.getElementById('estudioInput').value = '';
+  document.getElementById('previewEstudio').style.display = 'none';
+  document.getElementById('btnExtraerValores').style.display = 'none';
+  document.getElementById('valoresExtraidos').style.display = 'none';
+  document.getElementById('dropEstudio').style.borderColor = 'var(--gris-b)';
+  document.getElementById('dropEstudio').querySelector('div:first-child').textContent = '📎';
+  document.getElementById('dropEstudio').querySelectorAll('div')[1].textContent = 'Tocá para seleccionar imagen o PDF';
+  document.getElementById('dropEstudio').querySelectorAll('div')[2].textContent = 'JPG, PNG o PDF — foto del WhatsApp';
+  document.getElementById('btnLimpiarImg').style.display = 'none';
+  delete document.getElementById('formEstudio').dataset.valoresIA;
+}
+
+function previsualizarEstudio(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.type.startsWith('image/')) {
+    // Convertir siempre a JPEG via canvas para asegurar compatibilidad
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Escalar a máximo 1000px y comprimir bien para la API
+        let w = img.width, h = img.height;
+        const MAX = 1000;
+        if (w > h && w > MAX) { h = Math.round(h * MAX/w); w = MAX; }
+        else if (h > MAX) { w = Math.round(w * MAX/h); h = MAX; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        estudioBase64 = canvas.toDataURL('image/jpeg', 0.75);
+        console.log('Imagen reducida a', w+'x'+h, '— tamaño base64:', Math.round(estudioBase64.length/1024)+'KB');
+        estudioMediaType = 'image/jpeg';
+        document.getElementById('imgEstudio').src = estudioBase64;
+        document.getElementById('previewEstudio').style.display = 'block';
+        document.getElementById('btnExtraerValores').style.display = 'inline-flex';
+        document.getElementById('btnLimpiarImg').style.display = 'block';
+        document.getElementById('dropEstudio').style.borderColor = 'var(--verde)';
+        document.getElementById('dropEstudio').querySelector('div:first-child').textContent = '✅';
+        document.getElementById('dropEstudio').querySelectorAll('div')[1].textContent = file.name;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // PDF u otro — leer tal cual
+    const reader = new FileReader();
+    reader.onload = e => {
+      estudioBase64 = e.target.result;
+      estudioMediaType = file.type;
+      document.getElementById('previewEstudio').style.display = 'none';
+      document.getElementById('btnExtraerValores').style.display = 'inline-flex';
+      document.getElementById('btnLimpiarImg').style.display = 'block';
+      document.getElementById('dropEstudio').style.borderColor = 'var(--verde)';
+      document.getElementById('dropEstudio').querySelector('div:first-child').textContent = '✅';
+      document.getElementById('dropEstudio').querySelectorAll('div')[1].textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+async function extraerValoresEstudio() {
+  if (!estudioBase64) return;
+  const btn = document.getElementById('btnExtraerValores');
+  const div = document.getElementById('valoresExtraidos');
+  btn.textContent = '⏳ Analizando...';
+  btn.disabled = true;
+
+  const imgData = estudioBase64.split(',')[1];
+  const ANTHROPIC_KEY = obtenerAPIKey(); if (!ANTHROPIC_KEY) return;
+
+  const prompt = `Analizá esta imagen de un estudio médico o laboratorio.
+Extraé los valores más importantes y devolvé SOLO un JSON con esta estructura:
+{
+  "tipo": "Laboratorio/Radiografía/ECG/etc",
+  "fecha": "fecha del estudio si se ve",
+  "valores": [
+    {"nombre": "Hemoglobina", "valor": "12.5", "unidad": "g/dl", "referencia": "12-16", "estado": "normal/alto/bajo"},
+    {"nombre": "Glucemia", "valor": "114", "unidad": "mg/dl", "referencia": "70-110", "estado": "alto"}
+  ],
+  "conclusion": "resumen breve de los hallazgos más importantes",
+  "alertas": ["valor crítico si hay alguno"]
+}
+Si es una imagen radiológica o ECG, en "valores" poné los hallazgos descriptivos.
+Devolvé SOLO el JSON sin backticks.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgData } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error('API Error: ' + JSON.stringify(data.error));
+    console.log('Respuesta estudios:', JSON.stringify(data).substring(0, 400));
+    const texto = data.content?.map(i => i.text || '').join('') || '';
+    const textoLimpio = texto.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+    const parsed = JSON.parse(textoLimpio.match(/\{[\s\S]*\}/)[0]);
+
+    // Guardar valores extraídos para usarlos al guardar
+    document.getElementById('formEstudio').dataset.valoresIA = JSON.stringify(parsed);
+
+    // Mostrar tabla de valores
+    let html = '';
+    if (parsed.conclusion) {
+      html += `<div style="background:var(--azul-l);border-radius:var(--radio);padding:.75rem;font-size:13px;margin-bottom:.75rem">
+        <strong>Conclusión:</strong> ${parsed.conclusion}</div>`;
+    }
+    if (parsed.alertas && parsed.alertas.length) {
+      html += `<div style="background:var(--rojo-l);color:var(--rojo);border:1px solid var(--rojo);border-radius:var(--radio);padding:.75rem;font-size:13px;margin-bottom:.75rem">
+        🚨 ${parsed.alertas.join(' — ')}</div>`;
+    }
+    if (parsed.valores && parsed.valores.length) {
+      html += `<table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:var(--gris);font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gris-t)">
+          <th style="padding:6px 10px;text-align:left">Parámetro</th>
+          <th style="padding:6px 10px;text-align:center">Valor</th>
+          <th style="padding:6px 10px;text-align:center">Referencia</th>
+          <th style="padding:6px 10px;text-align:center">Estado</th>
+        </tr>
+        ${parsed.valores.map(v => {
+          const color = v.estado === 'alto' ? 'var(--rojo)' : v.estado === 'bajo' ? 'var(--naranja)' : 'var(--verde)';
+          const bg = v.estado === 'alto' ? 'var(--rojo-l)' : v.estado === 'bajo' ? 'var(--naranja-l)' : 'var(--verde-l)';
+          return `<tr style="border-bottom:1px solid var(--gris-b)">
+            <td style="padding:6px 10px;font-weight:500">${v.nombre}</td>
+            <td style="padding:6px 10px;text-align:center;font-weight:700">${v.valor} ${v.unidad||''}</td>
+            <td style="padding:6px 10px;text-align:center;color:var(--gris-t)">${v.referencia||'—'}</td>
+            <td style="padding:6px 10px;text-align:center"><span style="background:${bg};color:${color};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">${v.estado||'—'}</span></td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+    }
+    div.style.display = 'block';
+    div.innerHTML = html;
+
+  } catch(e) {
+    div.style.display = 'block';
+    div.innerHTML = `<div style="background:var(--rojo-l);color:var(--rojo);border-radius:var(--radio);padding:.75rem;font-size:13px">❌ ${e.message}</div>`;
+  }
+  btn.textContent = '🔍 Extraer valores con IA';
+  btn.disabled = false;
+}
+
+function guardarEstudio() {
+  const r = residentes[expIdx];
+  const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}, estudios:[]};
+  if (!ex.estudios) ex.estudios = [];
+
+  const valoresIA = document.getElementById('formEstudio').dataset.valoresIA;
+  const estudio = {
+    tipo:    document.getElementById('estTipo').value || 'Estudio',
+    fecha:   document.getElementById('estFecha').value,
+    medico:  document.getElementById('estMedico').value,
+    obs:     document.getElementById('estObs').value,
+    imagen:  estudioBase64 || null,
+    valores: valoresIA ? JSON.parse(valoresIA) : null,
+    cargadoEn: new Date().toISOString()
+  };
+
+  ex.estudios.unshift(estudio);
+  extra[r.id] = ex;
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  renderEstudios(ex.estudios);
+  showFEstudio(false);
+  delete document.getElementById('formEstudio').dataset.valoresIA;
+}
+
+function renderEstudios(arr) {
+  const c = document.getElementById('listaEstudios');
+  if (!arr || !arr.length) {
+    c.innerHTML = '<div class="empty-state"><span class="empty-icon">🔬</span>Sin estudios cargados</div>';
+    return;
+  }
+  c.innerHTML = arr.map((e, i) => {
+    const vals = e.valores;
+    const alertas = vals?.alertas?.length ? `<span style="background:var(--rojo-l);color:var(--rojo);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">🚨 ${vals.alertas[0]}</span>` : '';
+    const concl = vals?.conclusion ? `<div style="font-size:12px;color:var(--txt-s);margin-top:4px;font-style:italic">${vals.conclusion}</div>` : '';
+    const img = e.imagen ? `<img src="${e.imagen}" style="width:100%;max-height:200px;object-fit:contain;border-radius:var(--radio);border:1px solid var(--gris-b);margin-top:.75rem" alt="Estudio">` : '';
+    return `<div style="border:1.5px solid var(--gris-b);border-radius:var(--radio-lg);padding:1rem;margin-bottom:.75rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div>
+          <span style="font-weight:600;font-size:14px">${e.tipo}</span>
+          <span style="font-size:12px;color:var(--gris-t);margin-left:.5rem">📅 ${e.fecha||'—'}</span>
+          ${e.medico ? `<span style="font-size:12px;color:var(--gris-t);margin-left:.5rem">· ${e.medico}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          ${alertas}
+          <button class="btn btn-sm btn-danger" onclick="borrarEstudio(${i})">🗑</button>
+        </div>
+      </div>
+      ${concl}
+      ${e.obs ? `<div style="font-size:12px;color:var(--gris-t)">${e.obs}</div>` : ''}
+      ${img}
+    </div>`;
+  }).join('');
+}
+
+function borrarEstudio(i) {
+  if (!confirm('¿Eliminar este estudio?')) return;
+  const r = residentes[expIdx];
+  const ex = extra[r.id];
+  ex.estudios.splice(i, 1);
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  renderEstudios(ex.estudios);
+}
+
+// ── CONTROL DE PAÑALES ────────────────────────────────────────────
+
+function getPaniales(resId) {
+  const ex = extra[resId] || {};
+  return ex.paniales || { usaPaniales: 'no', porDia: 4, alerta: 10, movimientos: [] };
+}
+
+function calcularStock(pan) {
+  let stock = 0;
+  pan.movimientos.forEach(m => {
+    if (m.tipo === 'entrada') stock += m.cantidad;
+    else if (m.tipo === 'uso') stock -= m.cantidad;
+  });
+  return Math.max(0, stock);
+}
+
+function calcularTotalUsado(pan) {
+  return pan.movimientos.filter(m => m.tipo === 'uso').reduce((s, m) => s + m.cantidad, 0);
+}
+
+function guardarConfigPaniales() {
+  if (expIdx === -1) return;
+  const r = residentes[expIdx];
+  const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}, paniales:{}};
+  if (!ex.paniales) ex.paniales = { movimientos: [] };
+  ex.paniales.usaPaniales = document.getElementById('pUsaPaniales').value;
+  ex.paniales.porDia = parseInt(document.getElementById('pPorDia').value) || 4;
+  ex.paniales.alerta = parseInt(document.getElementById('pAlerta').value) || 10;
+  extra[r.id] = ex;
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  renderPaniales(r.id);
+  renderEstudios((extra[r.id]||{}).estudios||[]);
+}
+
+function renderPaniales(resId) {
+  const pan = getPaniales(resId);
+  const usa = pan.usaPaniales === 'si';
+  document.getElementById('pUsaPaniales').value = pan.usaPaniales || 'no';
+  document.getElementById('pPorDia').value = pan.porDia || 4;
+  document.getElementById('pAlerta').value = pan.alerta || 10;
+  document.getElementById('pPanelStock').style.display = usa ? 'block' : 'none';
+  if (!usa) return;
+
+  const stock = calcularStock(pan);
+  const diasRestantes = pan.porDia > 0 ? Math.floor(stock / pan.porDia) : 0;
+  const totalUsado = calcularTotalUsado(pan);
+
+  document.getElementById('pStockActual').textContent = stock;
+  document.getElementById('pDiasRestantes').textContent = diasRestantes;
+  document.getElementById('pTotalUsado').textContent = totalUsado;
+
+  // Alerta stock bajo
+  const alertDiv = document.getElementById('pAlertaDiv');
+  if (stock <= (pan.alerta || 10)) {
+    alertDiv.style.display = 'block';
+    alertDiv.style.background = stock === 0 ? 'var(--rojo-l)' : 'var(--naranja-l)';
+    alertDiv.style.color = stock === 0 ? 'var(--rojo)' : 'var(--naranja)';
+    alertDiv.style.border = stock === 0 ? '1px solid var(--rojo)' : '1px solid var(--naranja)';
+    alertDiv.textContent = stock === 0 ? '🚨 Sin stock — avisar urgente a la familia' : '⚠ Stock bajo — avisarle a la familia pronto';
+  } else {
+    alertDiv.style.display = 'none';
+  }
+
+  // Movimientos
+  const movs = [...(pan.movimientos||[])].reverse();
+  if (!movs.length) {
+    document.getElementById('pMovimientos').innerHTML = '<div class="empty-state"><span class="empty-icon">🧷</span>Sin movimientos registrados</div>';
+    return;
+  }
+  document.getElementById('pMovimientos').innerHTML =
+    '<div class="mov-head"><span>Fecha</span><span>Tipo</span><span>Detalle</span><span>Cant.</span></div>' +
+    movs.map((m,i) => `<div class="mov-row">
+      <span>${m.fecha||'—'}</span>
+      <span><span class="pill ${m.tipo==='entrada'?'pill-ioma':'pill-otro'}">${m.tipo==='entrada'?'📦 Entrega':'📉 Uso'}</span></span>
+      <span style="color:var(--gris-t)">${m.obs||'—'}</span>
+      <span style="font-weight:600;color:${m.tipo==='entrada'?'var(--verde)':'var(--rojo)'}">${m.tipo==='entrada'?'+':'−'}${m.cantidad}</span>
+    </div>`).join('');
+}
+
+function showFPanial(v) {
+  document.getElementById('formPanial').style.display = v ? 'block' : 'none';
+  if (v) document.getElementById('pFecha').value = new Date().toISOString().split('T')[0];
+}
+
+function guardarEntregaPanial() {
+  const cant = parseInt(document.getElementById('pCantidad').value);
+  if (!cant || cant <= 0) return;
+  const r = residentes[expIdx];
+  const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}};
+  if (!ex.paniales) ex.paniales = { usaPaniales:'si', porDia:4, alerta:10, movimientos:[] };
+  ex.paniales.movimientos.push({
+    fecha: document.getElementById('pFecha').value,
+    tipo: 'entrada',
+    cantidad: cant,
+    obs: document.getElementById('pObs').value || 'Entrega familiar'
+  });
+  extra[r.id] = ex;
+  sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+  renderPaniales(r.id);
+  renderEstudios((extra[r.id]||{}).estudios||[]);
+  showFPanial(false);
+  renderVistaPaniales();
+}
+
+function registrarUsoHoy() {
+  const hoy = new Date().toISOString().split('T')[0];
+  let actualizados = 0;
+  residentes.forEach(r => {
+    const pan = getPaniales(r.id);
+    if (pan.usaPaniales !== 'si' || pan.porDia <= 0) return;
+    // Verificar que no se registró el uso de hoy
+    const yaRegistrado = pan.movimientos.some(m => m.tipo === 'uso' && m.fecha === hoy);
+    if (yaRegistrado) return;
+    const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}};
+    if (!ex.paniales) ex.paniales = pan;
+    ex.paniales.movimientos.push({
+      fecha: hoy, tipo: 'uso', cantidad: pan.porDia, obs: 'Uso diario automático'
+    });
+    extra[r.id] = ex;
+    sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+    actualizados++;
+  });
+  if (actualizados > 0) {
+    alert(`✅ Uso del día registrado para ${actualizados} residentes.`);
+    renderVistaPaniales();
+  } else {
+    alert('El uso de hoy ya fue registrado para todos los residentes.');
+  }
+}
+
+function renderVistaPaniales() {
+  const conPaniales = residentes.filter(r => getPaniales(r.id).usaPaniales === 'si');
+  let bajos = 0, sinStock = 0;
+
+  const rows = conPaniales.map(r => {
+    const pan = getPaniales(r.id);
+    const stock = calcularStock(pan);
+    const dias = pan.porDia > 0 ? Math.floor(stock / pan.porDia) : 0;
+    const alerta = pan.alerta || 10;
+
+    let estado = '<span class="pill pill-ioma">✅ OK</span>';
+    if (stock === 0) { estado = '<span class="pill pill-pami" style="background:var(--rojo-l);color:var(--rojo)">🚨 Sin stock</span>'; sinStock++; }
+    else if (stock <= alerta) { estado = '<span class="pill" style="background:var(--naranja-l);color:var(--naranja)">⚠ Stock bajo</span>'; bajos++; }
+
+    return `<tr onclick="abrirExpYTab('${r.id}','paniales')" style="cursor:pointer">
+      <td><div class="res-name">${r.nombre}</div><div class="res-sub">${r.piso||'—'}</div></td>
+      <td style="text-align:center;font-weight:600">${pan.porDia}</td>
+      <td style="text-align:center;font-size:18px;font-weight:700;color:${stock===0?'var(--rojo)':stock<=alerta?'var(--naranja)':'var(--verde)'}">${stock}</td>
+      <td style="text-align:center">${dias} días</td>
+      <td>${estado}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();abrirExpYTab('${r.id}','paniales')">Ver →</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pg-total').textContent = conPaniales.length;
+  document.getElementById('pg-bajos').textContent = bajos;
+  document.getElementById('pg-sinstock').textContent = sinStock;
+  document.getElementById('tabla-paniales').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gris-t)">Ningún residente tiene pañales configurados</td></tr>';
+}
+
+function abrirExpYTab(resId, tab) {
+  const idx = residentes.findIndex(r => r.id === resId);
+  if (idx === -1) return;
+  abrirExp(idx);
+  setTimeout(() => {
+    const tabs = document.querySelectorAll('.etab');
+    tabs.forEach(t => {
+      if (t.textContent.includes('Pañales')) {
+        showETab('paniales', t);
+      }
+    });
+  }, 100);
+}
+
+// ── FOTO EVOLUCIÓN ────────────────────────────────────────────────
+let fotoEvolBase64 = null;
+
+function showFotoEvol(v) {
+  document.getElementById('formFotoEvol').style.display = v ? 'block' : 'none';
+  if (!v) {
+    fotoEvolBase64 = null;
+    document.getElementById('fotoEvolInput').value = '';
+    document.getElementById('previewFotoEvol').style.display = 'none';
+    document.getElementById('btnTranscribir').style.display = 'none';
+    document.getElementById('resultadoFotoEvol').style.display = 'none';
+    document.getElementById('dropZoneEvol').style.borderColor = 'var(--gris-b)';
+  }
+}
+
+function previsualizarFotoEvol(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotoEvolBase64 = e.target.result;
+    document.getElementById('imgFotoEvol').src = fotoEvolBase64;
+    document.getElementById('previewFotoEvol').style.display = 'block';
+    document.getElementById('btnTranscribir').style.display = 'inline-flex';
+    document.getElementById('dropZoneEvol').style.borderColor = 'var(--verde)';
+    document.getElementById('resultadoFotoEvol').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function transcribirEvolucion() {
+  if (!fotoEvolBase64 || expIdx === -1) return;
+  const btn = document.getElementById('btnTranscribir');
+  const res = document.getElementById('resultadoFotoEvol');
+  btn.textContent = '⏳ Transcribiendo...';
+  btn.disabled = true;
+
+  const imgData = fotoEvolBase64.split(',')[1];
+  const mediaType = fotoEvolBase64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+
+  const prompt = `Transcribí el texto de esta hoja de evolución médica escrita a mano.
+Devolvé SOLO un JSON con esta estructura exacta, sin texto adicional:
+{
+  "fecha": "DD/MM/AAAA o null si no se ve",
+  "profesional": "nombre del médico/profesional o null",
+  "especialidad": "especialidad o null",
+  "texto": "transcripción completa del texto de la evolución, respetando el contenido original"
+}
+Si hay palabras ilegibles, indicalo con [ilegible]. Devolvé SOLO el JSON.`;
+
+  try {
+    const ANTHROPIC_KEY = obtenerAPIKey(); if (!ANTHROPIC_KEY) return;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: imgData } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const texto = data.content?.map(i => i.text || '').join('') || '';
+    let parsed = null;
+    try {
+      const jsonMatch = texto.match(/\{[\s\S]*\}/);
+      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+    } catch(e) {}
+    if (!parsed) throw new Error('La imagen no es legible o no contiene texto de evolución médica');
+
+    // Precargar el formulario de evolución con los datos transcriptos
+    document.getElementById('evolFecha').value = parsed.fecha
+      ? parsed.fecha.split('/').reverse().join('-')
+      : new Date().toISOString().split('T')[0];
+    document.getElementById('evolAutor').value = [parsed.profesional, parsed.especialidad].filter(Boolean).join(' — ') || '';
+    document.getElementById('evolTexto').value = parsed.texto || '';
+
+    // Mostrar resultado y abrir formulario de evolución
+    res.style.display = 'block';
+    res.innerHTML = `<div style="background:var(--verde-l);color:var(--verde);border:1px solid var(--verde);border-radius:var(--radio);padding:.75rem;font-size:13px">
+      ✅ Texto transcripto correctamente. Revisá y editá si es necesario, luego guardá la evolución.
+    </div>`;
+
+    // Cerrar foto y abrir formulario de evolución
+    setTimeout(() => {
+      showFotoEvol(false);
+      showFEvol(true);
+    }, 1500);
+
+  } catch(e) {
+    res.style.display = 'block';
+    res.innerHTML = `<div style="background:var(--rojo-l);color:var(--rojo);border:1px solid var(--rojo);border-radius:var(--radio);padding:.75rem;font-size:13px">
+      ❌ Error: ${e.message}. Asegurate de que la foto sea clara y bien iluminada.
+    </div>`;
+  }
+
+  btn.textContent = '🔍 Transcribir y cargar';
+  btn.disabled = false;
+}
+
+// ── EVOLUCIONES ────────────────────────────────────────────────────
+function showFEvol(v) {
+  document.getElementById('formEvol').style.display = v?'block':'none';
+  if(v){document.getElementById('evolFecha').value=new Date().toISOString().split('T')[0];document.getElementById('evolAutor').value='';document.getElementById('evolTexto').value='';}
+}
+function guardarEvol() {
+  const t = document.getElementById('evolTexto').value.trim(); if(!t) return;
+  const ex = extra[residentes[expIdx].id];
+  ex.evoluciones.unshift({fecha:document.getElementById('evolFecha').value,autor:document.getElementById('evolAutor').value,texto:t});
+  sbUpsert('extra','extra_'+residentes[expIdx].id,ex,residentes[expIdx].id).catch(()=>{});
+  renderEvol(ex.evoluciones); showFEvol(false);
+}
+function borrarEvol(i) {
+  if(!confirm('¿Eliminar esta evolución?')) return;
+  const ex=extra[residentes[expIdx].id]; ex.evoluciones.splice(i,1);
+  sbUpsert('extra','extra_'+residentes[expIdx].id,ex,residentes[expIdx].id).catch(()=>{});
+  renderEvol(ex.evoluciones);
+}
+function renderEvol(arr) {
+  document.getElementById('evolList').innerHTML = !arr.length
+    ? '<div class="empty-state"><span class="empty-icon">📝</span>Sin evoluciones registradas</div>'
+    : arr.map((e,i)=>`<div class="evol-item"><div class="evol-top"><span class="evol-fecha">📅 ${e.fecha||'—'}</span><div style="display:flex;gap:.5rem;align-items:center"><span class="evol-autor">${e.autor||'Sin especificar'}</span><button class="btn btn-sm btn-danger" onclick="borrarEvol(${i})">🗑</button></div></div><div class="evol-txt">${e.texto}</div></div>`).join('');
+}
+
+// ── MEDICACIÓN ─────────────────────────────────────────────────────
+function showFMed(v) {
+  document.getElementById('formMed').style.display=v?'block':'none';
+  if (!v) {
+    delete document.getElementById('formMed').dataset.editIdx;
+    document.querySelector('#formMed button.btn-primary').textContent = 'Guardar';
+  }
+}
+function guardarMed() {
+  const n=document.getElementById('mNombre').value.trim(); if(!n) return;
+  const ex=extra[residentes[expIdx].id];
+  const med = {nombre:n,dosis:document.getElementById('mDosis').value,frec:document.getElementById('mFrec').value,via:document.getElementById('mVia').value,obs:document.getElementById('mObs').value};
+  const editIdx = document.getElementById('formMed').dataset.editIdx;
+  if (editIdx !== undefined && editIdx !== '') {
+    ex.meds[parseInt(editIdx)] = med;
+    delete document.getElementById('formMed').dataset.editIdx;
+  } else {
+    ex.meds.push(med);
+  }
+  sbUpsert('extra','extra_'+residentes[expIdx].id,ex,residentes[expIdx].id).catch(()=>{});
+  renderMeds(ex.meds); showFMed(false);
+  // Restaurar texto del botón
+  document.querySelector('#formMed button.btn-primary').textContent = 'Guardar';
+}
+function editarMed(i) {
+  const ex = extra[residentes[expIdx].id];
+  const m = ex.meds[i];
+  document.getElementById('mNombre').value = m.nombre || '';
+  document.getElementById('mDosis').value  = m.dosis  || '';
+  document.getElementById('mFrec').value   = m.frec   || '—';
+  document.getElementById('mVia').value    = m.via    || '—';
+  document.getElementById('mObs').value    = m.obs    || '';
+  // Guardar índice editado
+  document.getElementById('formMed').dataset.editIdx = i;
+  showFMed(true);
+  // Cambiar texto del botón guardar
+  document.querySelector('#formMed button.btn-primary').textContent = '💾 Actualizar medicamento';
+}
+function borrarMed(i) { const ex=extra[residentes[expIdx].id]; ex.meds.splice(i,1); sbUpsert('extra','extra_'+residentes[expIdx].id,ex,residentes[expIdx].id).catch(()=>{}); renderMeds(ex.meds); }
+const ORDEN_FREC = ['Ayuno','Desayuno','Almuerzo','Merienda','Cena','Al acostarse','Dos veces al día','Tres veces al día','Cuatro veces al día','Cada 8 horas','Cada 12 horas','Una vez al día','A demanda','—'];
+function ordenMed(a, b) {
+  const ia = ORDEN_FREC.findIndex(o => a.frec && a.frec.startsWith(o));
+  const ib = ORDEN_FREC.findIndex(o => b.frec && b.frec.startsWith(o));
+  return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+}
+function renderMeds(arr) {
+  if (!arr.length) {
+    document.getElementById('medList').innerHTML = '<div class="empty-state"><span class="empty-icon">💊</span>Sin medicamentos registrados</div>';
+    return;
+  }
+  const sorted = [...arr].map((m,i)=>({...m,_idx:i})).sort(ordenMed);
+  let lastFrec = null;
+  let html = '';
+  sorted.forEach(m => {
+    const frec = m.frec || '—';
+    if (frec !== lastFrec) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--azul);padding:8px 12px 4px;background:var(--azul-l);margin-top:4px;border-radius:6px 6px 0 0">${frec}</div>`;
+      lastFrec = frec;
+    }
+    html += `<div class="med-row" style="grid-template-columns:2fr 1.5fr 1fr auto auto">
+      <span style="font-weight:600">${m.nombre}</span>
+      <span style="color:var(--txt-s)">${m.dosis||'—'}</span>
+      <span style="color:var(--gris-t);font-size:12px">${m.via||'—'}</span>
+      <button class="btn btn-sm" onclick="editarMed(${m._idx})" title="Editar" style="padding:4px 8px">✏️</button>
+      <button class="btn btn-sm btn-danger" onclick="borrarMed(${m._idx})" title="Eliminar" style="padding:4px 8px">🗑</button>
+    </div>`;
+    if (m.obs) html += `<div style="font-size:11px;color:var(--naranja);padding:2px 12px 6px;font-style:italic">⚠ ${m.obs}</div>`;
+  });
+  document.getElementById('medList').innerHTML = html;
+}
+
+// ── CONTROLES ──────────────────────────────────────────────────────
+function showFCtrl(v) { document.getElementById('formCtrl').style.display=v?'block':'none'; if(v) document.getElementById('ctrlFecha').value=new Date().toISOString().split('T')[0]; }
+function guardarCtrl() {
+  const ex=extra[residentes[expIdx].id];
+  ex.controles.unshift({fecha:document.getElementById('ctrlFecha').value,turno:document.getElementById('ctrlTurno').value,ta:document.getElementById('ctrlTA').value,fc:document.getElementById('ctrlFC').value,temp:document.getElementById('ctrlTemp').value,sat:document.getElementById('ctrlSat').value,cat:document.getElementById('ctrlCat').value,diu:document.getElementById('ctrlDiu').value,obs:document.getElementById('ctrlObs').value,enf:document.getElementById('ctrlEnf').value});
+  sbUpsert('extra','extra_'+residentes[expIdx].id,ex,residentes[expIdx].id).catch(()=>{});
+  renderCtrl(ex.controles); showFCtrl(false);
+}
+function renderCtrl(arr) {
+  document.getElementById('ctrlList').innerHTML = !arr.length
+    ? '<div class="empty-state"><span class="empty-icon">📊</span>Sin controles registrados</div>'
+    : arr.map(r=>`<div class="ctrl-row"><span>${r.fecha||'—'}</span><span style="font-size:11px;color:var(--azul);font-weight:600">${(r.turno||'').split(' ')[0]}</span><span>${r.ta||'—'}</span><span>${r.fc||'—'}</span><span>${r.temp||'—'}</span><span>${r.sat||'—'}</span><span>${r.cat||'—'}</span><span>${r.diu||'—'}</span><span style="font-size:12px;color:var(--gris-t)">${r.obs||'—'}</span></div>`).join('');
+}
+
+// ── CARGA DE PLANILLA ─────────────────────────────────────────────
+let planillaBase64 = null;
+
+function previsualizarPlanilla(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    planillaBase64 = e.target.result;
+    document.getElementById('planillaPreview').src = planillaBase64;
+    document.getElementById('previewContainer').style.display = 'block';
+    document.getElementById('btnAnalizarPlanilla').style.display = 'flex';
+    document.getElementById('dropZone').style.borderColor = 'var(--azul)';
+    document.getElementById('resultadoCarga').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function limpiarCarga() {
+  planillaBase64 = null;
+  document.getElementById('planillaInput').value = '';
+  document.getElementById('previewContainer').style.display = 'none';
+  document.getElementById('btnAnalizarPlanilla').style.display = 'none';
+  document.getElementById('resultadoCarga').style.display = 'none';
+  document.getElementById('dropZone').style.borderColor = 'var(--gris-b)';
+}
+
+async function analizarPlanilla() {
+  if (!planillaBase64) return;
+  const tipo = document.getElementById('tipoPlanilla').value;
+  const btn = document.getElementById('btnAnalizarPlanilla');
+  const res = document.getElementById('resultadoCarga');
+
+  btn.textContent = '⏳ Analizando...';
+  btn.disabled = true;
+  res.style.display = 'none';
+
+  const tipoLabel = {
+    controles: 'planilla de controles de enfermería (signos vitales: TA, FC, temperatura, SatO2, catarsis, diuresis, novedades)',
+    medicacion: 'planilla de administración de medicación',
+    peso: 'planilla de control de peso quincenal'
+  }[tipo];
+
+  const prompt = `Analizá esta imagen de una ${tipoLabel} de la Residencia Geriátrica Oasis.
+
+Extraé todos los datos que puedas leer y devolvé un JSON con esta estructura exacta (sin texto adicional, solo el JSON):
+
+Para controles:
+{
+  "fecha": "DD/MM/AAAA",
+  "turno": "Mañana/Tarde/Noche",
+  "responsable": "nombre",
+  "controles": [
+    {
+      "residente": "APELLIDO, Nombre",
+      "ta": "120/80",
+      "fc": "70",
+      "temp": "36.5",
+      "sat": "98",
+      "cat": "Normal",
+      "diu": "800",
+      "obs": "observaciones"
+    }
+  ]
+}
+
+Para peso:
+{
+  "fecha": "DD/MM/AAAA",
+  "pesos": [
+    {"residente": "APELLIDO, Nombre", "peso": "70.5"}
+  ]
+}
+
+Para medicación:
+{
+  "fecha": "DD/MM/AAAA",
+  "turno": "Mañana/Tarde/Noche",
+  "administraciones": [
+    {"residente": "APELLIDO, Nombre", "medicamento": "nombre", "administrado": true, "hora": "08:00"}
+  ]
+}
+
+Si un campo no se puede leer, dejá el valor como null. Devolvé SOLO el JSON.`;
+
+  try {
+    // Llamar a Claude API con la imagen
+    const imgData = planillaBase64.split(',')[1];
+    const mediaType = planillaBase64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+
+    const ANTHROPIC_KEY = obtenerAPIKey(); if (!ANTHROPIC_KEY) return;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: imgData } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    console.log('API response:', JSON.stringify(data).substring(0, 500));
+
+    // Verificar errores de la API
+    if (data.error) throw new Error('API: ' + data.error.message);
+
+    const texto = data.content?.map(i => i.text || '').join('') || '';
+    console.log('Texto recibido:', texto.substring(0, 300));
+
+    // Parsear JSON de la respuesta — tolerante
+    let parsed = null;
+    try {
+      // Limpiar backticks y marcadores de código
+      const textoLimpio = texto.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+      const jsonMatch = textoLimpio.match(/\{[\s\S]*\}/);
+      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+    } catch(e) { console.log('Error parseando JSON:', e); }
+
+    if (!parsed) {
+      res.style.display = 'block';
+      res.innerHTML = `<div style="background:var(--naranja-l);color:var(--naranja);border:1px solid var(--naranja);border-radius:var(--radio);padding:.75rem;font-size:13px;margin-bottom:.5rem">
+        ⚠ Respuesta recibida — revisá la consola del navegador (F12) para más detalles.
+      </div>
+      <div style="background:var(--gris);border-radius:var(--radio);padding:.75rem;font-size:12px;font-family:monospace;max-height:200px;overflow-y:auto">${texto || JSON.stringify(data).substring(0,300)}</div>`;
+      btn.textContent = '🔍 Analizar y cargar datos';
+      btn.disabled = false;
+      return;
+    }
+
+    // Procesar y mostrar resultados
+    procesarResultados(parsed, tipo);
+
+  } catch(e) {
+    res.style.display = 'block';
+    res.innerHTML = `<div class="alert" style="background:var(--rojo-l);color:var(--rojo);border:1px solid var(--rojo)">
+      ❌ Error al analizar la imagen: ${e.message}<br>
+      <small>Asegurate de que la foto sea legible y esté bien iluminada.</small>
+    </div>`;
+  }
+
+  btn.textContent = '🔍 Analizar y cargar datos';
+  btn.disabled = false;
+}
+
+function procesarResultados(datos, tipo) {
+  const res = document.getElementById('resultadoCarga');
+  res.style.display = 'block';
+
+  if (tipo === 'controles' && datos.controles) {
+    let cargados = 0, noEncontrados = [];
+
+    datos.controles.forEach(ctrl => {
+      if (!ctrl.residente) return;
+      // Buscar residente por nombre aproximado
+      const idx = residentes.findIndex(r =>
+        r.nombre.toUpperCase().includes(ctrl.residente.toUpperCase().split(',')[0].trim()) ||
+        ctrl.residente.toUpperCase().includes(r.nombre.toUpperCase().split(',')[0].trim())
+      );
+      if (idx === -1) { noEncontrados.push(ctrl.residente); return; }
+      const r = residentes[idx];
+      const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}};
+      ex.controles.unshift({
+        fecha: datos.fecha || new Date().toISOString().split('T')[0].split('-').reverse().join('/'),
+        turno: datos.turno || '—',
+        ta: ctrl.ta || '',
+        fc: ctrl.fc || '',
+        temp: ctrl.temp || '',
+        sat: ctrl.sat || '',
+        cat: ctrl.cat || '',
+        diu: ctrl.diu || '',
+        obs: ctrl.obs || '',
+        enf: datos.responsable || ''
+      });
+      extra[r.id] = ex;
+      sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+      cargados++;
+    });
+
+    res.innerHTML = `
+      <div class="alert" style="background:var(--verde-l);color:var(--verde);border:1px solid var(--verde);margin-bottom:.5rem">
+        ✅ <strong>${cargados} controles cargados</strong> correctamente en los expedientes
+        ${datos.fecha ? ` — Fecha: ${datos.fecha}` : ''}
+        ${datos.turno ? ` — Turno: ${datos.turno}` : ''}
+      </div>
+      ${noEncontrados.length ? `<div class="alert" style="background:var(--naranja-l);color:var(--naranja);border:1px solid var(--naranja)">
+        ⚠ No se encontraron estos residentes: ${noEncontrados.join(', ')}
+      </div>` : ''}
+      <div style="font-size:13px;color:var(--gris-t);margin-top:.5rem">
+        Podés verificar los datos abriendo el expediente de cada residente → pestaña Controles.
+      </div>`;
+
+  } else if (tipo === 'peso' && datos.pesos) {
+    let cargados = 0;
+    datos.pesos.forEach(p => {
+      if (!p.residente || !p.peso) return;
+      const idx = residentes.findIndex(r =>
+        r.nombre.toUpperCase().includes(p.residente.toUpperCase().split(',')[0].trim())
+      );
+      if (idx === -1) return;
+      const r = residentes[idx];
+      const ex = extra[r.id] || {evoluciones:[], meds:[], controles:[], dieta:{}};
+      if (!ex.pesos) ex.pesos = [];
+      ex.pesos.unshift({ fecha: datos.fecha || '', peso: p.peso });
+      extra[r.id] = ex;
+      sbUpsert('extra', 'extra_'+r.id, ex, r.id).catch(()=>{});
+      cargados++;
+    });
+    res.innerHTML = `<div class="alert" style="background:var(--verde-l);color:var(--verde);border:1px solid var(--verde)">
+      ✅ <strong>${cargados} pesos cargados</strong> correctamente
+    </div>`;
+
+  } else if (tipo === 'medicacion' && datos.administraciones) {
+    res.innerHTML = `
+      <div class="alert" style="background:var(--verde-l);color:var(--verde);border:1px solid var(--verde)">
+        ✅ Se leyeron <strong>${datos.administraciones.length} administraciones</strong>
+        ${datos.fecha ? ` — Fecha: ${datos.fecha}` : ''}
+        ${datos.turno ? ` — Turno: ${datos.turno}` : ''}
+      </div>
+      <div style="font-size:12px;color:var(--gris-t);margin-top:.5rem">
+        Los datos de medicación administrada quedan registrados para auditoría.
+      </div>`;
+  } else {
+    res.innerHTML = `<div class="alert" style="background:var(--naranja-l);color:var(--naranja);border:1px solid var(--naranja)">
+      ⚠ Se recibió una respuesta pero no se pudieron extraer datos. Revisá que la foto sea clara y legible.
+    </div>`;
+  }
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+initStorage();
+</script>
+</body>
+</html>
