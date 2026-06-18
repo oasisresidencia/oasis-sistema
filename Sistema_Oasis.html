@@ -4427,7 +4427,7 @@ Si hay palabras ilegibles, indicalo con [ilegible]. Devolvé SOLO el JSON.`;
     // Cerrar foto y abrir formulario de evolución
     setTimeout(() => {
       showFotoEvol(false);
-      showFEvol(true);
+      showFEvol(true, true);
     }, 1500);
 
   } catch(e) {
@@ -4442,9 +4442,9 @@ Si hay palabras ilegibles, indicalo con [ilegible]. Devolvé SOLO el JSON.`;
 }
 
 // ── EVOLUCIONES ────────────────────────────────────────────────────
-function showFEvol(v) {
+function showFEvol(v, noLimpiar=false) {
   document.getElementById('formEvol').style.display = v?'block':'none';
-  if(v){document.getElementById('evolFecha').value=new Date().toISOString().split('T')[0];document.getElementById('evolAutor').value='';document.getElementById('evolTexto').value='';}
+  if(v && !noLimpiar){document.getElementById('evolFecha').value=new Date().toISOString().split('T')[0];document.getElementById('evolAutor').value='';document.getElementById('evolTexto').value='';}
 }
 function guardarEvol() {
   const t = document.getElementById('evolTexto').value.trim(); if(!t) return;
