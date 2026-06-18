@@ -4292,7 +4292,7 @@ function registrarUsoHoy() {
 }
 
 function renderVistaPaniales() {
-  const conPaniales = residentes.filter(r => getPaniales(r.id).usaPaniales === 'si');
+  const conPaniales = residentes.filter(r => getPaniales(r.id).usaPaniales === 'si' && r.datos && r.datos.estado !== 'fallecido');
   let bajos = 0, sinStock = 0;
 
   const rows = conPaniales.map(r => {
