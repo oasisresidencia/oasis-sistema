@@ -762,73 +762,56 @@
 </div>
 
 <script>
-// ── NEON DATABASE ─────────────────────────────────────────────────
-const NEON_CONN = 'postgresql://neondb_owner:npg_PGpBtArlJ32a@ep-dark-tree-ac2yyro3-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require';
-const FOTO_KEY = 'oasis_foto_'; // fotos siguen en localStorage
+// ── STORAGE (Supabase) con ping anti-pausa ───────────────────────
+const SUPABASE_URL = 'https://mmjsbsutbozyjhqsmpdh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DlCBtAhM1Dcd_Yycg5R4tA_RH5L6rKr';
+const FOTO_KEY = 'oasis_foto_';
 
-let _neonSql = null;
-async function getNeon() {
-  if (_neonSql) return _neonSql;
-  const mod = await import('https://unpkg.com/@neondatabase/serverless@0.10.4/dist/index.js');
-  _neonSql = mod.neon(NEON_CONN);
-  return _neonSql;
-}
-
-async function neonQuery(sql, params=[]) {
-  const sqlFn = await getNeon();
-  return await sqlFn.query(sql, params);
-}
+// Ping automático cada 4 días para evitar pausa de Supabase
+(function initAntiPause() {
+  const PING_KEY = 'oasis_last_ping';
+  const PING_INTERVAL = 4 * 24 * 60 * 60 * 1000;
+  async function ping() {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/residentes?select=id&limit=1', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      localStorage.setItem(PING_KEY, Date.now().toString());
+    } catch(e) {}
+  }
+  const lastPing = parseInt(localStorage.getItem(PING_KEY) || '0');
+  if (Date.now() - lastPing > PING_INTERVAL) ping();
+})();
 
 async function sbGet(table, id) {
-  const res = await neonQuery(`SELECT datos FROM ${table} WHERE id=$1`, [id]);
-  return res.rows && res.rows.length ? res.rows[0].datos : null;
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id + '&select=datos', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  const data = await r.json();
+  return data.length ? data[0].datos : null;
 }
 
 async function sbUpsert(table, id, datos, extra_id) {
-  if (extra_id) {
-    await neonQuery(
-      `INSERT INTO ${table}(id, residente_id, datos) VALUES($1,$2,$3::jsonb)
-       ON CONFLICT(id) DO UPDATE SET datos=$3::jsonb`,
-      [id, extra_id, JSON.stringify(datos)]
-    );
-  } else {
-    await neonQuery(
-      `INSERT INTO ${table}(id, datos) VALUES($1,$2::jsonb)
-       ON CONFLICT(id) DO UPDATE SET datos=$2::jsonb`,
-      [id, JSON.stringify(datos)]
-    );
-  }
+  const body = extra_id
+    ? JSON.stringify({ id, residente_id: extra_id, datos })
+    : JSON.stringify({ id, datos });
+  await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body
+  });
 }
 
 async function sbGetAll(table) {
-  const res = await neonQuery(`SELECT id, datos FROM ${table}`);
-  return res.rows || [];
-}
-
-async function sbGet(table, id) {
-  const res = await neonQuery(`SELECT datos FROM ${table} WHERE id=$1`, [id]);
-  return res.rows && res.rows.length ? res.rows[0].datos : null;
-}
-
-async function sbUpsert(table, id, datos, extra_id) {
-  if (extra_id) {
-    await neonQuery(
-      `INSERT INTO ${table}(id, residente_id, datos) VALUES($1,$2,$3)
-       ON CONFLICT(id) DO UPDATE SET datos=$3`,
-      [id, extra_id, JSON.stringify(datos)]
-    );
-  } else {
-    await neonQuery(
-      `INSERT INTO ${table}(id, datos) VALUES($1,$2)
-       ON CONFLICT(id) DO UPDATE SET datos=$2`,
-      [id, JSON.stringify(datos)]
-    );
-  }
-}
-
-async function sbGetAll(table) {
-  const res = await neonQuery(`SELECT id, datos FROM ${table}`);
-  return res.rows || [];
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?select=id,datos', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  return await r.json();
 }
 
 const RESIDENTES_BASE = [
